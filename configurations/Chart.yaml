@@ -1,0 +1,16 @@
+---
+apiVersion: v2
+name: rvm-conf
+description: 'Configurations Charts For SDS RVM'
+version: 0.1.0
+appVersion: "1.0.1"
+keywords:
+  - unified
+home: https://seamless.se//
+sources:
+  - repolink
+maintainers:
+  - name: kalyan Roy
+    email: kalyan.roy@seamless.se
+  - name: Debadrita Sarkar
+    email: debadrita.sarkar@seamless.se
