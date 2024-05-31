@@ -1,0 +1,84 @@
+spring.application.name = ERS Config Services
+
+################ DATA-SOURCE CONFIGURATIONS ###############
+spring.datasource.url=jdbc:mysql://localhost:3306/config_services
+spring.datasource.username=refill
+spring.datasource.password=refill
+spring.datasource.driverClassName=com.mysql.jdbc.Driver
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+spring.datasource.type=com.zaxxer.hikari.HikariDataSource
+#spring.datasource.testWhileIdle = true
+#spring.datasource.validationQuery = SELECT 1
+#spring.jpa.show-sql = true
+#spring.jpa.hibernate.ddl-auto = create
+#spring.jpa.hibernate.naming-strategy = org.hibernate.cfg.ImprovedNamingStrategy
+#spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.MySQL5Dialect
+
+
+################ APPLICATION CONFIGURATIONS ###############
+
+backend.service.ws.channel=WebService
+backend.service.ws.clientId=ERS-BACKEND-SERVICE
+backend.service.ws.url=/services/backend-service
+backend.service.ws.port=9007
+
+################ SERVER PORT CONTAINER CONFIGURATIONS ###############
+
+server.port=9009
+server.session.cookie.max-age=-1
+server.session.timeout=-1
+server.tomcat.max-threads=2000
+server.tomcat.max-connections=2000
+
+############ FLOW CONTROL CONFIGURATIONS ###############
+
+flowcontrol.default.asynchronous=false
+flowcontrol.default.cooldown_time=3000
+flowcontrol.default.max_parallel_requests=3000
+
+################ THREAD POOL CONFIGURATIONS ###############
+
+ws.endpoint.threadpool.max.queuesize = 256
+ws.endpoint.threadpool.initial.threads = 5
+ws.endpoint.threadpool.high.watermark = 25
+ws.endpoint.threadpool.low.watermark = 5
+ws.endpoint.threadpool.dequeue.timeout.millis = 120000
+ws.endpoint.threadpool.name = VoucherFactoryCXFThreadPool
+
+############## RESELLER SERVICE CONFIGURATIONS ############
+
+ers_reseller_connection.url=http://localhost:8777/txe/reseller
+ers_reseller_connection.user=extclientproxy
+ers_reseller_connection.password=extclientproxy
+
+######### TRANSACTION PROCESSING CONFIGURATIONS ###########
+
+# ERSWSTransactionProcessingService connection
+ers.connections.transaction_processing.url=http://localhost:8777/txe/transactionProcessing
+ers.connections.transaction_processing.user=extclientproxy
+ers.connections.transaction_processing.password=extclientproxy
+
+mobile.app.token=464b34f122f467bc2ee4a9c47e6c0476415486f64c38560764745321ae759ed2
+
+################## Encryption Configurations ##########################
+
+aes.enc.isEncryptedVersion=false
+aes.enc.key=NjgyZWRlODE2OTg4ZTU4ZmI2ZDA1N2Q5ZDg1NjA1ZTA=
+aes.enc.file.key=YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5
+
+################ SSL CONTAINER CONFIGURATIONS ###############
+
+# See Readme file for details of configurations of SSL.
+
+server.ssl.enabled=false
+server.ssl.key-store-type=PKCS12
+server.ssl.key-store=/opt/seamless/conf/config-services/keystore.pkcs12
+server.ssl.key-store-password=682ede816988e58fb6d057d9d85605e0
+server.ssl.key-password=682ede816988e58fb6d057d9d85605e0
+server.ssl.key-alias=configservices
+server.ssl.protocol=TLS
+
+############################ To validate Request token for loadKeyStore Request #############################################
+
+# for older apps keep it true so that it lets them bypass the validation of request token. but it will always validate for new apps.
+mobile.app.token.bypass.enabled=true
