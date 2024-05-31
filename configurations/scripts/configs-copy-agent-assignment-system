@@ -1,0 +1,9 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/agent-assignment-system/templates/{audit,notification}
+
+
+cp /main/* /opt/seamless/conf/
+cp /agentassignment-main/* /opt/seamless/conf/agent-assignment-system/
+cp /agentassignment-audit/* /opt/seamless/conf/agent-assignment-system/templates/audit/
+cp /agentassignment-notification/* /opt/seamless/conf/agent-assignment-system/templates/notification/

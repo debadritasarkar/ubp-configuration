@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/scc-engine-core/templates/tdr
+
+cp /main/* /opt/seamless/conf/
+cp /scc-engine-main/* /opt/seamless/conf/scc-engine-core/
+cp /scc-engine-templates/* /opt/seamless/conf/scc-engine-core/templates/tdr/

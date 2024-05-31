@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/bi-engine/{templates,scripts}
+
+cp /main/* /opt/seamless/conf/
+cp /bi-engine-main/* /opt/seamless/conf/bi-engine/
+cp /bi-engine-templates/* /opt/seamless/conf/bi-engine/templates/
+cp /bi-engine-scripts/* /opt/seamless/conf/bi-engine/scripts/

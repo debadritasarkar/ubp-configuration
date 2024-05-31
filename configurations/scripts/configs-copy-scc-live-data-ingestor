@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/scc-live-data-ingestor/scripts
+
+cp /main/* /opt/seamless/conf/
+cp /scc-ingestor-main/* /opt/seamless/conf/scc-live-data-ingestor/
+cp /scc-ingestor-scripts/* /opt/seamless/conf/scc-live-data-ingestor/scripts/

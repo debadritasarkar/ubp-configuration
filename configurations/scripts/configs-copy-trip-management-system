@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/trip-management-system/{templates,notification_templates}
+
+cp /main/* /opt/seamless/conf/
+cp /trip-management-main/* /opt/seamless/conf/trip-management-system/
+cp /trip-management-templates/* /opt/seamless/conf/trip-management-system/templates/
+cp /trip-management-notification/* /opt/seamless/conf/trip-management-system/notification_templates/

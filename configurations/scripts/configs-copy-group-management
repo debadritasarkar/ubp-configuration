@@ -1,0 +1,9 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/group-management/templates/{audit,notification,tdr}
+
+cp /main/* /opt/seamless/conf/
+cp /group-management-main/* /opt/seamless/conf/group-management/
+cp /group-management-audit/* /opt/seamless/conf/group-management/templates/audit/
+cp /group-management-notification/* /opt/seamless/conf/group-management/templates/notification/
+cp /group-management-tdr/* /opt/seamless/conf/group-management/templates/tdr/

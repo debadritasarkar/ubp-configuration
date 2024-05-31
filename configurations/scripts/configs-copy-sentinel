@@ -1,0 +1,26 @@
+#!/bin/sh
+
+nodes=redis-0.svc-redis,redis-1.svc-redis,redis-2.svc-redis
+echo "Looping thorugh the redis list to see if Redis Master node is available now"
+for i in ${nodes//,/ }
+do
+MASTER=$(redis-cli --no-auth-warning --raw -h $i info replication | awk '{print $1}' | grep master_host: | cut -d ":" -f2)
+if [ -n "$MASTER" ]
+then
+  break
+fi
+done
+if [ -z "$MASTER" ]
+then
+  MASTER=redis-0.svc-redis
+fi
+cat > /etc/redis/sentinel.conf << EOF
+port 5000
+sentinel monitor mymaster $MASTER 6379 2
+sentinel resolve-hostnames yes
+sentinel announce-hostnames yes
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 60000
+sentinel parallel-syncs mymaster 1
+EOF
+cat /etc/redis/sentinel.conf

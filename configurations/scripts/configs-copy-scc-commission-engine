@@ -1,0 +1,9 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/scc-commission-engine/{scripts,templates}
+mkdir /opt/seamless/conf/scc-commission-engine/templates/tdr
+
+cp /main/* /opt/seamless/conf/
+cp /scc-commission-main/* /opt/seamless/conf/scc-commission-engine/
+cp /scc-commission-scripts/* /opt/seamless/conf/scc-commission-engine/scripts/
+cp /scc-commission-templates/* /opt/seamless/conf/scc-commission-engine/templates/tdr/

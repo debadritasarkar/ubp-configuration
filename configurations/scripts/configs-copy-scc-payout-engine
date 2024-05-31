@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/scc-payout-engine/templates/tdr
+
+cp /main/* /opt/seamless/conf/
+cp /scc-payout-main/* /opt/seamless/conf/scc-payout-engine/
+cp /scc-payout-templates/* /opt/seamless/conf/scc-payout-engine/templates/tdr/

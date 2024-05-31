@@ -1,0 +1,13 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/batch-scheduling/
+mkdir /opt/seamless/conf/batch-scheduling/{templates,datafeeder,notification,samples}
+mkdir /opt/seamless/conf/batch-scheduling/datafeeder/templates
+
+
+cp /main/* /opt/seamless/conf/
+cp /batch-scheduling-main/* /opt/seamless/conf/batch-scheduling/
+cp /batch-scheduling-templates/* /opt/seamless/conf/batch-scheduling/templates/
+cp /batch-scheduling-feeder/* /opt/seamless/conf/batch-scheduling/datafeeder/templates/
+cp /batch-scheduling-notifications/* /opt/seamless/conf/batch-scheduling/notification/
+cp /batch-scheduling-samples/* /opt/seamless/conf/batch-scheduling/samples/

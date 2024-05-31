@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/product-management/templates/{audit,tdr}
+
+cp /main/* /opt/seamless/conf/
+cp /product-management-main/* /opt/seamless/conf/product-management/
+cp /product-management-audit/* /opt/seamless/conf/product-management/templates/audit/
+cp /product-management-tdr/* /opt/seamless/conf/product-management/templates/tdr/

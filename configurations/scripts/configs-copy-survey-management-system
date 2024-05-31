@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/survey-management-system/templates/{tdr,notification}
+
+cp /main/* /opt/seamless/conf/
+cp /survey-management-main/* /opt/seamless/conf/survey-management-system/
+cp /survey-management-tdr/* /opt/seamless/conf/survey-management-system/templates/tdr/
+cp /survey-management-notification/* /opt/seamless/conf/survey-management-system/templates/notification/

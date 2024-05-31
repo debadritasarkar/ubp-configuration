@@ -1,0 +1,12 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/kyc/{templates,actions_groovy,mappings,notification}
+mkdir -p /opt/seamless/conf/kyc/templates/{audit,tdr}
+
+cp /main/* /opt/seamless/conf/
+cp /kyc-main/* /opt/seamless/conf/kyc/
+cp //kyc-templates-audit/* /opt/seamless/conf/kyc/templates/audit/
+cp //kyc-templates-tdr/* /opt/seamless/conf/kyc/templates/tdr/
+cp /kyc-actions-groovy/* /opt/seamless/conf/kyc/actions_groovy/
+cp /kyc-mappings/* /opt/seamless/conf/kyc/mappings/
+cp /kyc-notification/* /opt/seamless/conf/kyc/notification/

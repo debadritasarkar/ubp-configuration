@@ -1,0 +1,9 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/order-management-system/templates/{audit,notification,tdr}
+
+cp /main/* /opt/seamless/conf/
+cp /order-management-main/* /opt/seamless/conf/order-management-system/
+cp /order-management-audit/* /opt/seamless/conf/order-management-system/templates/audit/
+cp /order-management-notification/* /opt/seamless/conf/order-management-system/templates/notification/
+cp /order-management-tdr/* /opt/seamless/conf/order-management-system/templates/tdr/

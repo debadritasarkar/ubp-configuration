@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/dealer-management-system/templates/dataFeed
+
+cp /main/* /opt/seamless/conf/
+cp /dealer-management-main/* /opt/seamless/conf/dealer-management-system/
+cp /dealer-management-templates/* /opt/seamless/conf/dealer-management-system/templates/dataFeed/

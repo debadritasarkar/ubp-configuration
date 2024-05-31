@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/notification-manager/datafeeder/templates
+
+cp /main/* /opt/seamless/conf/
+cp /notification-manager-main/* /opt/seamless/conf/notification-manager/
+cp /notification-manager-feeder/* /opt/seamless/conf/notification-manager/datafeeder/templates/

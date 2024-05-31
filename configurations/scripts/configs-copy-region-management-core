@@ -1,0 +1,9 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/region-management-core
+mkdir /opt/seamless/conf/region-management-core/templates
+
+cp /main/* /opt/seamless/conf/
+cp /region-management-main/* /opt/seamless/conf/region-management-core/
+cp /region-management-templates/* /opt/seamless/conf/region-management-core/templates/
+

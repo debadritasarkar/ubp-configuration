@@ -1,0 +1,54 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/txe/{actions,pricing,rules,templates}
+
+cp /main/* /opt/seamless/conf/
+cp /txe-main/* /opt/seamless/conf/txe/
+cp /txe-actions/* /opt/seamless/conf/txe/actions/
+cp /txe-pricing/* /opt/seamless/conf/txe/pricing/
+cp /txe-rules/* /opt/seamless/conf/txe/rules/
+cp /txe-templates/* /opt/seamless/conf/txe/templates/
+
+
+mkdir -p /var/seamless/log/txe/${HOSTNAME_COMMAND}/fallback
+
+#renaming the nodeId according to the number of statefulset
+value=`echo ${HOSTNAME_COMMAND} | awk -F'-' '{$NF += 1; printf "%02d\n", $NF}'`
+sed -i "s+node_id=01+node_id=${value}+g" /opt/seamless/conf/txe/txe.properties
+sed -i "s+node_id=01+node_id=${value}+g" /opt/seamless/conf/system.properties
+
+sed -i "s+/var/seamless/log/txe+/var/seamless/log/txe/${HOSTNAME_COMMAND}+g" /opt/seamless/conf/txe/log4j2.xml
+sed -i "s+/var/seamless/log/txe+/var/seamless/log/txe/${HOSTNAME_COMMAND}+g" /opt/seamless/conf/txe/txe.properties
+
+cat > /etc/mysql/conf.d/custom.cnf << EOF
+[mysqld]
+default-storage-engine=InnoDB
+server-id=2001
+datadir=/var/lib/mariadb-custom/${HOSTNAME_COMMAND} 
+tmpdir=/var/tmp
+innodb_buffer_pool_size = 6G
+innodb_flush_log_at_trx_commit = 2
+innodb_log_buffer_size = 8M
+innodb_log_file_size = 256MB
+innodb_log_files_in_group = 2
+innodb_file_per_table = 1
+max_allowed_packet=128M
+key_buffer_size=512M
+query_cache_size=0
+wait_timeout=604800
+long_query_time=0.5
+character_set_server=utf8
+max_connections=2000
+innodb_max_dirty_pages_pct = 80
+innodb_flush_method=O_DIRECT
+innodb_lock_wait_timeout = 120
+innodb_commit_concurrency=0
+innodb_open_files=2000
+log_queries_not_using_indexes
+innodb_autoinc_lock_mode=2
+innodb_doublewrite=1
+
+[mysql]
+user=mysql
+default-character-set=utf8
+EOF

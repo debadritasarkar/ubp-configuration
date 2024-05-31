@@ -1,0 +1,7 @@
+mkdir -p /opt/seamless/conf/ims-companion/{templates}
+mkdir -p /opt/seamless/conf/ims-companion/templates/{audit,tdr}
+
+cp /main/* /opt/seamless/conf/
+cp /ims-companion-main/* /opt/seamless/conf/ims-companion/
+cp /ims-companion-audit/* /opt/seamless/conf/ims-companion/templates/audit/
+cp /ims-companion-tdr/* /opt/seamless/conf/ims-companion/templates/tdr/

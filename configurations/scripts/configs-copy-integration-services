@@ -1,0 +1,10 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/integration-services/{templates,kyc,surveys,keys}
+
+cp /main/* /opt/seamless/conf/
+cp /integration-services-main/* /opt/seamless/conf/integration-services/
+cp /integration-services-templates/* /opt/seamless/conf/integration-services/templates/
+cp /integration-services-kyc/* /opt/seamless/conf/integration-services/kyc/
+cp /integration-services-surveys/* /opt/seamless/conf/integration-services/surveys/
+cp /integration-services-keys/* /opt/seamless/conf/integration-services/keys/

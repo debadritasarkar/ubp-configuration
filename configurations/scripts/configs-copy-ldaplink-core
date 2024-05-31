@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/ldaplink-core/scripts
+
+cp /main/* /opt/seamless/conf/
+cp /ldaplink-main/* /opt/seamless/conf/ldaplink-core/
+cp /ldaplink-scripts/* /opt/seamless/conf/ldaplink-core/scripts/

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/trip-management-scheduler/notification_templates
+
+cp /main/* /opt/seamless/conf/
+cp /trip-management-scheduler-main/* /opt/seamless/conf/trip-management-scheduler/
+cp /trip-management-scheduler-notification/* /opt/seamless/conf/trip-management-scheduler/notification_templates/

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/inventory-management-system/{scripts,templates}
+mkdir -p /opt/seamless/conf/inventory-management-system/templates/{audit,tdr}
+
+cp /main/* /opt/seamless/conf/
+cp /inventory-management-main/* /opt/seamless/conf/inventory-management-system/
+cp /inventory-management-scripts/* /opt/seamless/conf/inventory-management-system/scripts/
+cp /inventory-management-audit/* /opt/seamless/conf/inventory-management-system/templates/audit/
+cp /inventory-management-tdr/* /opt/seamless/conf/inventory-management-system/templates/tdr/

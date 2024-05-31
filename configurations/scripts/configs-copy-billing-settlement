@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/seamless/conf/billing-settlement/datafeeder/templates
+
+cp /main/* /opt/seamless/conf/
+cp /billing-settlement-main/* /opt/seamless/conf/billing-settlement/
+cp /billing-settlement-feeder/* /opt/seamless/conf/billing-settlement/datafeeder/templates/
