@@ -1,0 +1,30 @@
+{
+  "bundles": [
+    {
+      "sku": "BUNDLE_PREWasal30",
+      "name": "BUNDLE_PREWasal30",
+      "description": "",
+      "value": "30",
+      "currency": "YER",
+      "groupId": "Prepaid Packages"
+    }
+  ],
+
+  "topUpDenominations": [
+    {
+      "sku": "155_YR",
+      "name": "155 YER",
+      "value": "155",
+      "currency": "YER"
+    }
+  ],
+
+  "voucherDenominations": [
+    {
+      "sku": "155_YR",
+      "name": "155 YER",
+      "value": "155",
+      "currency": "YER"
+    }
+  ]
+}
