@@ -1,0 +1,549 @@
+############# -- AlertAppWebService Config -- ############################
+
+server.servlet.context-path=/alertapp
+server.port=8375
+
+aletapp.http.response.headers=authorization,system-token
+
+############# CORS config ####################
+cors.enable=false
+#comma separated origin list
+cors.allowedorigins=*
+
+###########################################################################
+
+###############################################################################
+# ers alert app database holds view that returns all necessary data for reseller retrieval
+
+alertapp.db_driver=com.mysql.jdbc.Driver
+alertapp.db_url=jdbc:mysql://localhost:3306/alertapp
+alertapp.db_user=refill
+alertapp.db_password=refill
+#alertapp.db_password_encryption_enabled=true
+#alertapp.db_password=cmVmaWxs
+alertapp.pool_min_size=1
+alertapp.pool_max_size=10
+alertapp.pool_query_timeout=300000
+alertapp.fetch_timeout=300000
+
+alertapp.pool_prepared_statements=true
+alertapp.minimum_idle=2
+alertapp.pool_name=alertapp
+
+###############################################################################
+# dataaggregator database holds table std_parent_reseller_aggregation that
+# contains information about parent resellers
+
+dataaggregator.db_driver=com.mysql.jdbc.Driver
+dataaggregator.db_url=jdbc:mysql://localhost:3306/bi
+dataaggregator.db_user=refill
+dataaggregator.db_password=refill
+dataaggregator.pool_min_size=1
+dataaggregator.pool_max_size=10
+dataaggregator.pool_query_timeout=300000
+dataaggregator.fetch_timeout=300000
+
+###############################################################################
+# Refill database connection
+#
+refilldb.db_driver=com.mysql.jdbc.Driver
+refilldb.db_url=jdbc:mysql://localhost:3306/Refill
+refilldb.db_user=refill
+refilldb.db_password=refill
+refilldb.pool_min_size=1
+refilldb.pool_max_size=10
+refilldb.pool_query_timeout=300000
+refilldb.fetch_timeout=300000
+
+################################################################################
+
+# Inventory-Management-System database connection
+#
+ims.db_driver=org.mariadb.jdbc.Driver
+ims.db_url=jdbc:mysql://localhost:3306/inventory_management_system
+ims.db_user=refill
+ims.db_password=refill
+ims.pool_min_size=1
+ims.pool_max_size=100
+ims.pool_query_timeout=300000
+ims.fetch_timeout=300000
+
+
+################################################################################
+
+###############################################################################
+# Group-Management-System database connection
+#
+groupmanagementsystem.db_driver=org.mariadb.jdbc.Driver
+groupmanagementsystem.db_url=jdbc:mysql://localhost:3306/groupmanagementsystem
+groupmanagementsystem.db_user=refill
+groupmanagementsystem.db_password=refill
+groupmanagementsystem.pool_min_size=1
+groupmanagementsystem.pool_max_size=100
+groupmanagementsystem.pool_query_timeout=300000
+groupmanagementsystem.fetch_timeout=300000
+
+################################################################################
+
+## ERS principal service connection
+#
+ersprincipalservice.url=http://localhost:8912/principalService
+ersprincipalservice.user=alertapp
+ersprincipalservice.password=alertapp
+#
+###############################################################################
+# Monitored reseller type list separated by space. Only those resellers will
+# have balance checked.
+# NOTE: this should be kept in order of hierarchy in system
+
+monitored_reseller_types= rsm asm pos reseller
+
+###############################################################################
+#The reseller type mentioned here will use relative comparison for low stock alert
+#relativeComparison = rsm
+
+#alert_stock_level.rsm=1
+#parentalert_stock_level.rsm=1
+
+###############################################################################
+# Reseller stock level which will trigger alert sms to reseller himself
+# Stock level is the balance of the reseller in lowest currency
+# Ex: alert_stock_level.default=100 means 100 XOF
+# The stock level can define per reseller type or global using default
+# Stock level for reseller type will override default one
+#
+# Assuming the following reseller types are defined in the system.
+# MTN (Top level Reseller)
+# SC (Service center Reseller)
+# SCC (Subservice center Reseller)
+# MD (Master asm Reseller)
+# SD (Subdealer Reseller)
+# TDR (Point of sale)
+#
+# When there is no level set per reseller type,
+# default value will be used.
+#NOTE: if relativeComparison is enabled for a reseller type then stock level for
+#that reseller type should be defined here in range 0-1. By default it should be 1,
+#any value less than 1 will be used to bring threshold level down
+#
+# default level must be set
+alert_stock_level.default=100000
+
+#Absolute threshhold for a rsm with parent stock alert
+# make sure to add reseller type rsm in the monitorred resellers
+alert_stock_level.rsm=100000
+parentalert_stock_level.rsm=100000
+
+
+#Absolute threshhold for a wholeseller with parent stock alert
+alert_stock_level.wholeseller=10000
+parentalert_stock_level.wholeseller=10000
+
+alert_stock_level.reseller=1000
+parentalert_stock_level.reseller=1000
+#alert_stock_level.MD=800
+#alert_stock_level.SD=700
+#alert_stock_level.TDR=2000
+
+###############################################################################
+# Reseller stock level which will trigger alert sms to parent
+# Stock level is the balance of the reseller in lowest currency
+# Ex: parentalert_stock_level.default=100 means 100 XOF
+# The stock level can define per reseller type or global using default
+# Stock level for reseller type will override default one
+# Normally parent alert level is higher than reseller alert level
+#
+# When there is no level set per reseller type,
+# default value will be used.
+#NOTE: if relativeComparison is enabled for a reseller type then stock level for
+#that reseller type should be defined here in range 0-1. By default it should be 1,
+#any value less than 1 will be used to bring threshold level down
+#
+# default level must be set
+#
+parentalert_stock_level.default=1000
+#parentalert_stock_level.SCC=920
+#parentalert_stock_level.MD=820
+#parentalert_stock_level.SD=25000
+#parentalert_stock_level.TDR=2000
+
+###############################################################################
+# Reseller stock level which will trigger alert sms to account manager
+# Stock level is the balance of the reseller in lowest currency
+# Ex: accountManageralert_stock_level.default=100 means 100 XOF
+# The stock level can define per reseller type or global using default
+# Stock level for reseller type will override default one
+# Normally parent alert level is higher than reseller alert level
+#
+# When there is no level set per reseller type,
+# default value will be used.
+#NOTE: if relativeComparison is enabled for a reseller type then stock level for
+#that reseller type should be defined here in range 0-1. By default it should be 1,
+#any value less than 1 will be used to bring threshold level down
+#
+# default level must be set
+accountManageralert_stock_level.default=-1
+accountManageralert_stock_level.wholeseller=-1
+#accountManageralert_stock_level.SC=1200
+#accountManageralert_stock_level.SCC=920
+#accountManageralert_stock_level.MD=820
+#accountManageralert_stock_level.SD=25000
+#accountManageralert_stock_level.TDR=2000
+
+###############################################################################
+
+###############################################################################
+# Reseller stock level which will trigger alert sms to region representative
+# Stock level is the balance of the reseller in lowest currency
+# Ex: regionRepresentativealert_stock_level.default=100 means 100 XOF
+# The stock level can define per reseller type or global using default
+# Stock level for reseller type will override default one
+# Normally parent alert level is higher than reseller alert level
+#
+# When there is no level set per reseller type,
+# default value will be used.
+#NOTE: if relativeComparison is enabled for a reseller type then stock level for
+#that reseller type should be defined here in range 0-1. By default it should be 1,
+#any value less than 1 will be used to bring threshold level down
+#
+# default level must be set
+regionRepresentativealert_stock_level.default=-1
+#regionRepresentativealert_stock_level.wholeseller=160
+#regionRepresentativealert_stock_level.SC=1200
+#regionRepresentativealert_stock_level.SCC=920
+#regionRepresentativealert_stock_level.MD=820
+#regionRepresentativealert_stock_level.SD=25000
+#regionRepresentativealert_stock_level.TDR=2000
+
+###############################################################################
+
+###############################################################################
+# Reseller stock level which will trigger alert sms to zone representative
+# Stock level is the balance of the reseller in lowest currency
+# Ex: zoneRepresentativealert_stock_level.default=100 means 100 XOF
+# The stock level can define per reseller type or global using default
+# Stock level for reseller type will override default one
+# Normally parent alert level is higher than reseller alert level
+#
+# When there is no level set per reseller type,
+# default value will be used.
+#NOTE: if relativeComparison is enabled for a reseller type then stock level for
+#that reseller type should be defined here in range 0-1. By default it should be 1,
+#any value less than 1 will be used to bring threshold level down
+#
+# default level must be set
+zoneRepresentativealert_stock_level.default=-1
+#zoneRepresentativealert_stock_level.wholeseller=160
+#zoneRepresentativealert_stock_level.SC=1200
+#zoneRepresentativealert_stock_level.SCC=920
+#zoneRepresentativealert_stock_level.MD=820
+#zoneRepresentativealert_stock_level.SD=25000
+#zoneRepresentativealert_stock_level.TDR=2000
+
+###############################################################################
+
+###############################################################################
+# Reseller stock level which will trigger alert sms to sector representative
+# Stock level is the balance of the reseller in lowest currency
+# Ex: sectorRepresentativealert_stock_level.default=100 means 100 XOF
+# The stock level can define per reseller type or global using default
+# Stock level for reseller type will override default one
+# Normally parent alert level is higher than reseller alert level
+#
+# When there is no level set per reseller type,
+# default value will be used.
+#NOTE: if relativeComparison is enabled for a reseller type then stock level for
+#that reseller type should be defined here in range 0-1. By default it should be 1,
+#any value less than 1 will be used to bring threshold level down
+#
+# default level must be set
+sectorRepresentativealert_stock_level.default=-1
+#sectorRepresentativealert_stock_level.SC=1200
+#sectorRepresentativealert_stock_level.SCC=920
+#sectorRepresentativealert_stock_level.MD=820
+#sectorRepresentativealert_stock_level.SD=25000
+#sectorRepresentativealert_stock_level.TDR=2000
+###############################################################################
+
+###############################################################################
+# SMS provider connection, by default assumes kannel is running on the same host
+# with standard configuration
+smsprovider.classname=HttpSMSProvider
+smsprovider.url=http://127.0.0.1:13013/cgi-bin/sendsms?username=ers&password=recharge&from=1234
+
+###############################################################################
+# Product SKU used by parents to transfer credits to resellers
+# These products used for fetching latest parents this reseller
+products_used_by_parent=CREDIT_TRANSFER
+
+###############################################################################
+# Configuration for CMS
+default_language=en
+# This is the only supported CMS type right now, dont change this!
+cms.classname=SimpleFileCMS
+# The supported languages
+cms.languages=en ar
+# File containing the english(en) translations
+cms.en.filename=alertapp_messages_english.properties
+# Encoding for the english translations
+cms.en.encoding=ISO-8859-1
+# File containing the arabic translations
+cms.ar.filename=alertapp_messages_arabic.properties
+# Encoding for the french translations
+cms.ar.encoding=UTF-8
+
+# Locale for KES currency
+
+locale.custom_currency.KES=2
+locale.default_country_code=254
+locale.default_network_code=
+# Length reseller msisdn without country code
+locale.subscriber_number_digits=9
+locale.decimal_separator=.
+locale.thousand_separator=,
+locale.network_code_requires_0_prefix=false
+
+##################### Message Resource Properties ########################
+locale.message.path=/opt/seamless/conf/alertapp
+locale.message.prefix=messages
+locale.message.defaultLocale=en-GB
+locale.message.supportedLocale=en-GB,en-US
+
+###############################################################################
+# Jobs
+#
+# Jobs to run on the scheduler
+#
+
+jobs = product_low_stock_alert_generator
+
+###############################################################################
+#------- Stock level alerts interval --------
+####
+## Example Quartz cron schedules:
+##
+## 0 0 12 * * ?			Fire at 12pm (noon) every day
+##
+## 0 15 10 ? * *		Fire at 10:15am every day
+##
+## 0  14  * ?			Fire every minute starting at 2pm and ending at 2:59pm, every day
+##
+## 0 0/5 14 * * ?		Fire every 5 minutes starting at 2pm and ending at 2:55pm, every day
+##
+## 0 15 10 ? * MON-FRI	Fire at 10:15am Monday to Friday
+##
+## 0 15 10 15 * ?		Fire at 10:15am on the 15th day of every month
+##
+## 0 15 10 L * ?		Fire at 10:15am on the last day of every month
+##
+## 0 15 10 ? * 6L		Fire at 10:15am on the last Friday of every month
+##
+## 0 15 10 ? * 6#3		Fire at 10:15am on the third Friday of every month
+##
+## Fire every hour Monday to Friday
+##
+# schedule = 0 0 0/1 ? * MON-FRI
+# stock_alert.group = STOCK_BALANCE stock level for reseller balance
+# stock_alert.group = VOUCHER_STOCK voucher stock for MTN
+# update_balance_threshold_job.group = UPDATE_BALANCE_THRESHOLD for update reseller balance threshold by database configuration
+# send_low_balance_alert_job.group = SEND_LOW_BALANCE_ALERT for send Low Balance Alert according to Database Configuration
+
+stock_alert.group = STOCK_BALANCE
+# Simple subject line
+stock_alert.subjectLine = Low stock alert
+stock_alert.schedule=0 0/30 * * * ?
+# Top level's Email recipients separated by comma(,) in case of multiple emails, fill in and uncomment
+
+#email address to which the alert has to be sent must be mentioned here
+stock_alert.emailTo = root@seamless.se
+
+# Fill in valid mail server host
+stock_alert.mailServerHost = sdsmailrelay.dev.ts
+# Put the port that the SMTP server runs on
+stock_alert.mailServerPort = 25
+# Who the email is from
+stock_alert.fromEmail = sdsmailrelay.dev.ts
+stock_alert.actions = EMAIL, SMS
+stock_alert.currency = SEK
+# An optional email password, the SMTP server may require this
+#alertapp.fromPassword =
+# Empty Body Line
+stock_alert.bodyLine =
+
+###############################################################################
+#=================Job for update reseller balance threshold by database configuration=============
+update_balance_threshold_job.group = UPDATE_BALANCE_THRESHOLD
+update_balance_threshold_job.subjectLine = Update balance threshold
+update_balance_threshold_job.schedule=0 0/30 * * * ?
+update_balance_threshold_job.checkLifelineStatus=false
+update_balance_threshold_job.fields.queryLimit=250
+update_balance_threshold_job.fields.updateResellerPerRequestSize=70
+update_balance_threshold_job.fields.sendAsyncRequestSize=5
+update_balance_threshold_job.fields.dailyTransQueryParam=resellerTypeId,accountTypeId,resellerIds,days
+update_balance_threshold_job.fields.dailyTransQuery=SELECT ifnull(SUM(transactionAmount),0) AS transactionAmount, resellerId, account_type as accountTypeId FROM std_sales_trend_aggregation where resellerTypeId=? and account_type=? and resellerId in ({resellerIds}) and (aggregationDate between date_sub(curdate(),INTERVAL ? DAY) and curdate()) group by resellerId, account_type
+update_balance_threshold_job.currency = ZMK
+#=================Low Balance Alert Job according to Database Configuration=============
+###############################################################################
+
+###############################################################################
+#=================Job for send Low Balance Alert according to Database Configuration=============
+send_low_balance_alert_job.group = SEND_LOW_BALANCE_ALERT
+send_low_balance_alert_job.subjectLine = Low balance alert
+send_low_balance_alert_job.schedule=0 0/30 * * * ?
+send_low_balance_alert_job.checkLifelineStatus=false
+send_low_balance_alert_job.fields.queryLimit=250
+send_low_balance_alert_job.fields.dailyTransQueryParam=resellerTypeId,accountTypeId,resellerIds,days
+send_low_balance_alert_job.fields.dailyTransQuery=SELECT ifnull(SUM(transactionAmount),0) AS transactionAmount, resellerId, account_type as accountTypeId FROM std_sales_trend_aggregation where resellerTypeId=? and account_type=? and resellerId in ({resellerIds}) and (aggregationDate between date_sub(curdate(),INTERVAL ? DAY) and curdate()) group by resellerId, account_type
+send_low_balance_alert_job.mailServerHost = sdsmailrelay.dev.ts
+send_low_balance_alert_job.mailServerPort = 25
+send_low_balance_alert_job.fromEmail = demo@seamless.se
+send_low_balance_alert_job.currency = ZMK
+#=================Low Balance Alert Job by database Configuration=============
+###############################################################################
+
+###############################################################################
+#=================Job for send pending alert=============
+process_alert_queue_job.group = PROCESS_ALERT_QUEUE
+process_alert_queue_job.subjectLine = Low balance alert
+process_alert_queue_job.schedule=0 0/30 * * * ?
+process_alert_queue_job.checkLifelineStatus=false
+process_alert_queue_job.fields.dailyTransQueryParam=resellerTypeId,accountTypeId,resellerIds,days
+process_alert_queue_job.fields.dailyTransQuery=SELECT ifnull(SUM(transactionAmount),0) AS transactionAmount, resellerId, account_type as accountTypeId FROM std_sales_trend_aggregation where resellerTypeId=? and account_type=? and resellerId in ({resellerIds}) and (aggregationDate between date_sub(curdate(),INTERVAL ? DAY) and curdate()) group by resellerId, account_type
+process_alert_queue_job.mailServerHost = sdsmailrelay.dev.ts
+process_alert_queue_job.mailServerPort = 25
+process_alert_queue_job.fromEmail = demo@seamless.se
+process_alert_queue_job.currency = ZMK
+#=================Job for send pending alert=============
+###############################################################################
+
+###############################################################################
+#------- Voucher Stock alerts  --------
+####
+# voucher_stock_alert.1.denomination = <product in-price-value i.e 10.00>
+# voucher_stock_alert.1.threshold = <threshold values i.e 50>
+# voucher_stock_alert.actions = EMAIL, SMS Right now only EMAIL and SMS supported
+# stock_alert.group = STOCK_BALANCE stock level for reseller balance
+# stock_alert.group = VOUCHER_STOCK voucher stock for Operator
+
+voucher_stock_alert.group = VOUCHER_STOCK
+voucher_stock_alert.1.denomination = 100.00
+voucher_stock_alert.1.threshold = 100
+voucher_stock_alert.1.sku = 7100014
+voucher_stock_alert.1.product_buffer_days = 1
+voucher_stock_alert.1.average_product_delivery_days = 1
+voucher_stock_alert.1.supplier=MTN
+voucher_stock_alert.1.actions= EMAIL, SMS
+voucher_stock_alert.1.emailTo=
+voucher_stock_alert.1.smsTo= 923458447912
+
+voucher_stock_alert.2.sku = 7100015
+voucher_stock_alert.2.denomination = 200.00
+voucher_stock_alert.2.threshold = 100
+voucher_stock_alert.2.product_buffer_days = 1
+voucher_stock_alert.2.average_product_delivery_days = 1
+voucher_stock_alert.2.supplier=MTN
+voucher_stock_alert.2.actions= EMAIL, SMS
+voucher_stock_alert.2.emailTo=
+voucher_stock_alert.2.smsTo= 923458447912
+
+voucher_stock_alert.3.sku = 7100016
+voucher_stock_alert.3.denomination = 500.00
+voucher_stock_alert.3.threshold = 100
+voucher_stock_alert.3.product_buffer_days = 1
+voucher_stock_alert.3.average_product_delivery_days = 1
+voucher_stock_alert.3.supplier=MTN
+voucher_stock_alert.3.actions= EMAIL, SMS
+voucher_stock_alert.3.emailTo=
+voucher_stock_alert.3.smsTo=923458447912
+
+voucher_stock_alert.schedule =   0/30 * * * * ?
+
+#voucher_stock_alert.schedule =   0 0 9 * * ?
+voucher_stock_alert.actions = EMAIL, SMS
+
+#operator email to which the voucher stock alert will be sent must be mentioned below.
+voucher_stock_alert.emailTo =
+
+voucher_stock_alert.subjectLine = Alert! Low Voucher Stock
+voucher_stock_alert.currency = SEK
+voucher_stock_alert.fromEmail = sdsmailrelay.dev.ts
+voucher_stock_alert.mailServerHost = sdsmailrelay.dev.ts
+voucher_stock_alert.mailServerPort = 25
+voucher_stock_alert.smsFrom= stock
+#sms address of operator has to be provided below, for example like 733111695,733111048,733111970
+voucher_stock_alert.smsTo=
+account_manager_expression=${groupIds[1]}
+
+##
+# To send mail for region,zone and sector based to a parent for specific resellerType below config is required.
+# If value is not specified then mail to a parent for region,zone and sector based .
+##
+allowstockalert.parent.region=
+allowstockalert.parent.zone=
+allowstockalert.parent.sector=
+
+allowstockalert.parent=tdr, rsm, asm, pos
+##
+# To send sms region,zone and sector based to a parent for specific resellerType below config is required.
+# If value is not specified then sms to a parent for region,zone and sector based .
+##
+allowstockalert.reseller.region=
+allowstockalert.reseller.zone=
+allowstockalert.reseller.sector=
+
+##
+# To send representative mail for region,zone and sector based for specific resellerType below config is required.
+# If value is not specified then mail to a representative for region,zone and sector based .
+##
+allowstockalert.region=
+allowstockalert.zone=
+allowstockalert.sector=
+
+#SFO Alert App Config
+product_low_stock_alert_generator.group=product_low_stock_alert_generator
+product_low_stock_alert_generator.schedule=0 0/5 * * * ?
+product_low_stock_alert_generator.actions=EMAIL
+#Multiple Email IDs can be given by comma(,) separated values
+product_low_stock_alert_generator.subjectLine=SFO Stock Level Alert
+product_low_stock_alert_generator.fromEmail=se.vms@seamless.se
+product_low_stock_alert_generator.fromPassword=seamless123
+product_low_stock_alert_generator.mailServerHost=sdsmailrelay.dev.ts
+product_low_stock_alert_generator.mailServerPort=25
+
+# If not defined the alert would be send to all resellers of a specific hierarchy, although if defined, the alert would be send to entire hierarchy #except the reseller mentioned with this rule
+#product_low_stock_alert_generator.AlertExclusion=POS
+
+#when value = ‘Y’ alert will be generated to both direct owner hierarchy and also from group management(Route of the owner). #when value ==‘N’ it will only send alerts to the direct parent hierarchy of owner.
+product_low_stock_alert_generator.fetchGroupHierarchy = Y
+
+# When value == 0 alert will be generated to the owner only
+# When value < 0 alert will be generated to all level parents in hierarchy
+# When value > 0 it will only send alert to parents in hierarchy upto that level
+product_low_stock_alert_generator.fetchAncestorUpToLevel=0
+
+#### Product Low Stock MultiThreaded Configurations ####
+product_low_stock_alert_generator.fetch_owner_batch_size = 500
+product_low_stock_alert_generator.fetch_owner_product_details_sub_task_threadpool_size = 10
+product_low_stock_alert_generator.preprocessing_owner_queue_size = 20
+product_low_stock_alert_generator.to_be_processed_owner_queue_size = 20
+product_low_stock_alert_generator.process_product_stock_sub_processor_sleep_time_in_millis = 100
+product_low_stock_alert_generator.fetch_owner_product_details_task_sleep_time_in_millis = 100
+######################################################################################
+
+### Component endpoints configuration
+components.endpoints.dealer_management_system=http://localhost:8033/dms/auth
+components.endpoints.notification_management_system=http://localhost:8277
+components.endpoints.product_management_system=http://localhost:8012
+
+############### Connection properties for rest client ###############
+##Connection properties for rest client
+#Http Client settings(these configuration will be used while connecting to flytext server)
+http.client.max_total_connections=200
+#Http Client connections per route
+http.client.max_connections_per_route=15
+#Timeout (in millis) until a connection is established with the remote host
+http.client.connection_timeout=30000
+#Timeout (in millis) while waiting for data after the connection was established
+http.client.socket_timeout=50000
+#Retry count, when there is a failure in establishing the connection
+http.client.retry_count=1

@@ -1,0 +1,17 @@
+{
+<#compress>
+    "batchId": "${request.batchId}",
+    "importType": "${request.importType}",
+    "users": [
+    <#list request.requestObjectsList as resellerUser>
+    {
+        "recordId": ${resellerUser?counter},
+        <#list resellerUser?keys as key>
+            "${key}" : "${resellerUser[key]}"<#sep>,
+        </#list>
+ 
+    }<#sep>,
+    </#list>
+    ]
+</#compress>
+}

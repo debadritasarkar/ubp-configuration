@@ -1,0 +1,141 @@
+# Properties for module agent-assignment-system
+############# Spring configuration ####################
+spring.application.name=agent-assignment-system
+server.port=11001
+spring.jackson.date-format=yyyy-MM-dd HH:mm:ss
+spring.jackson.time-zone=Asia/Calcutta
+server.servlet.context-path=/aas
+############# SuperUser configuration ####################
+sfo.super-user.username=root
+
+logging.config=file:/opt/seamless/conf/agent-assignment-system/log4j2.xml
+
+##################### Message Resource Properties ########################
+locale.message.path=/opt/seamless/conf/agent-assignment-system
+locale.message.prefix=messages
+locale.message.defaultLocale=en-GB
+locale.message.supportedLocale=en-GB,en-US
+
+############# DB configuration ####################
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+spring.datasource.username=refill
+spring.datasource.password=refill
+spring.datasource.url=jdbc:mysql://localhost:3306/AGENT_ASSIGNMENT
+
+spring.datasource.test-on-borrow=true
+spring.datasource.validation-query=SELECT 1
+spring.datasource.remove-abandoned=true
+spring.datasource.remove-abandoned-timeout=30
+spring.datasource.max-active=500
+spring.datasource.max-idle=15
+spring.datasource.min-idle=15
+spring.datasource.dbcp2.test-while-idle=true
+
+spring.jpa.config.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+spring.jpa.config.hibernate.format_sql=true
+spring.jpa.config.hibernate.ejb.naming_strategy=org.hibernate.cfg.EJB3NamingStrategy
+spring.jpa.config.hibernate.show_sql=true
+spring.jpa.config.hibernate.hbm2ddl.auto=validate
+spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+spring.jpa.properties.hibernate.id.new_generator_mappings=false
+
+############# DB Migration ####################
+spring.flyway.baseline-on-migrate=true
+
+############# Kafka configuration ####################
+spring.cloud.stream.kafka.binder.brokers=localhost
+spring.cloud.stream.bindings.do-in-stream.destination=order-management-do-dev
+spring.cloud.stream.bindings.do-in-stream.group=deliveryGroup
+
+#spring.cloud.stream.kafka.binder.configuration.sasl.mechanism=SCRAM-SHA-512
+#spring.cloud.stream.kafka.binder.configuration.sasl.jaas.config= org.apache.kafka.common.security.scram.ScramLoginModule required username=\"sfcpockafka\" password=\"SDS1@sfcpockafka\";
+#spring.cloud.stream.kafka.binder.configuration.security.protocol=SASL_SSL
+#spring.cloud.stream.kafka.binder.replicationFactor=1
+
+spring.cloud.stream.bindings.reassign_agent_in_stream.destination=reassign-agent-dev
+spring.cloud.stream.bindings.reassign_agent_in_stream.content-type=application/json
+spring.cloud.stream.bindings.reassign_agent_in_stream.group=reassignAgentGroup
+
+spring.cloud.stream.bindings.do-out-stream.destination=trip-management-dev
+spring.cloud.stream.bindings.do-out-stream.content-type=application/json
+#spring.cloud.stream.bindings.do-out-stream.producer.partitionCount=12
+
+#spring.cloud.stream.kafka.binder.autoAddPartitions=true
+
+############# Integration/Proxy ####################
+rest.template.http.max.idle=50
+rest.template.http.keep.alive=30
+rest.template.http.connection.timeout=20
+
+############ Dealer management config ############
+reseller.management.proxy.uri=http://localhost:8033
+reseller.management.proxy.name=dms-service
+reseller.management.proxy.api.reseller.children=/dms/v1/resellers/resellerChildren/{parentResellerId}
+reseller.management.proxy.api.reseller.data=/dms/v1/resellers/{resellerId}/resellerData
+reseller.management.reseller.children.level=1
+reseller.management.reseller.children.limit=50
+reseller.type.agent=OperatorAgent
+
+
+######### External Logistic System Config #########
+external.logistic.proxy.uri=http://localhost:11003
+fare.analytics.proxy.uri=/els/v1/vendor/fare-analytics
+
+agent.assignment.schedular=false
+
+######### Notification Management Config #########
+notification.management.proxy.uri=http://localhost:8277
+notification.management.proxy.failed.resultcode=9999
+
+##########Pagination properties#############
+agent.assignment.pagination.default.perPage=30
+agent.assignment.pagination.default.page=1
+
+##########Agent Volume/Weight Unit#############
+agent.default.weight.unit=KILOGRAM
+agent.default.volume.unit=CUBIC_METER
+agent.default.maxCount=100
+agent.default.maxWeight=10000
+agent.default.maxVolume=10000
+agent.additional.properties.maxWeight.key=maximumWeight
+agent.additional.properties.maxVolume.key=maximumVolume
+agent.additional.properties.maxCount.key=maximumCount
+
+######## Additional properties #########
+agent.longitude.key=longitude
+agent.latitude.key=latitude
+
+delivery.options.map={'SELLER':'seller','BUYER':{'buyer','dropPoint','receiver'}}
+delivery.procurement.map={'internal':'Internal','external':'External'}
+delivery.agent.selection={'SELLER':'seller','BUYER':'receiver'}
+delivery.mpesa.agent.selection={'SELLER':'seller','BUYER':'buyer'}
+delivery.agent.override.resellerType=Distributor
+delivery.agentOf.typeId.deliveryOption.mapping={ 'operator':{ 'external':'EXTERNAL'}, 'default':{'internal':'INTERNAL'}}
+
+pickup.location.key=logisticLocation
+drop.location.key=logisticLocation
+merge.order.location.field.name=logisticLocation
+
+############# Thymeleaf configuration ####################
+spring.thymeleaf.check-template-location=true
+spring.thymeleaf.prefix=file:/opt/seamless/conf/agent-assignment-system/templates/notification/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML
+spring.thymeleaf.encoding=UTF-8
+spring.thymeleaf.content-type=text/html
+spring.thymeleaf.cache=false
+
+# Required by current version of swagger to run
+# Currently AAS seems using methods of version 2 and 3 both
+spring.mvc.pathmatch.matching-strategy=ant_path_matcher
+
+############# Audit trail data feed ##############
+auditFeed.componentName=aas
+auditFeed.eventType=audit
+auditFeed.version=1
+
+audit.feed.list.type=INCLUDE
+audit.feed.list.events=
+auditFeed.freemarker.file.path=/opt/seamless/conf/agent-assignment-system/templates/audit
+auditFeed.default.template=aas_audit_feed.ftl
