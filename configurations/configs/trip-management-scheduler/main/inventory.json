@@ -1,0 +1,74 @@
+{
+  "thresholdInfo": [
+    {
+      "posId": "POS-1-2-2",
+      "productWiseThreshold": [
+        {
+          "productCode": "SIM",
+          "availableQuantity": 40.0,
+          "threshold": 50.0
+        }
+      ]
+    },
+    {
+      "posId": "POS-2-1-1",
+      "productWiseThreshold": [
+        {
+          "productCode": "SIM",
+          "availableQuantity": 40.0,
+          "threshold": 50.0
+        }
+      ]
+    },
+    {
+      "posId": "POS-2-1-2",
+      "productWiseThreshold": [
+        {
+          "productCode": "SIM",
+          "availableQuantity": 50.0,
+          "threshold": 60.0
+        }
+      ]
+    },
+    {
+      "posId": "POS-1-1-1",
+      "productWiseThreshold": [
+        {
+          "productCode": "SIM",
+          "availableQuantity": 50.0,
+          "threshold": 60.0
+        },
+        {
+          "productCode": "Mobile",
+          "availableQuantity": 20.0,
+          "threshold": 30.0
+        },
+        {
+          "productCode": "Charger",
+          "availableQuantity": 15.0,
+          "threshold": 25.0
+        }
+      ]
+    },
+    {
+      "posId": "POS-1-2-1",
+      "productWiseThreshold": [
+        {
+          "productCode": "SIM",
+          "availableQuantity": 50.0,
+          "threshold": 60.0
+        },
+        {
+          "productCode": "Mobile",
+          "availableQuantity": 20.0,
+          "threshold": 30.0
+        },
+        {
+          "productCode": "Charger",
+          "availableQuantity": 15.0,
+          "threshold": 25.0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="DEBUG">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n</Property>
+        <Property name="APP_LOG_ROOT">/var/seamless/log/trip-management-scheduler</Property>
+    </Properties>
+    <Appenders>
+        <File name="LogToFile" fileName="${APP_LOG_ROOT}/trip-management-scheduler.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <!-- avoid duplicated logs with additivity=false -->
+        <Logger name="se.seamless" level="debug">
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+        <!-- <Root level="error">
+            <AppenderRef ref="LogToFile"/>
+        </Root> -->
+    </Loggers>
+</Configuration>

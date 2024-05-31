@@ -1,0 +1,3 @@
+<html xmlns:th="http://www.thymeleaf.org" th:inline="text" th:remove="tag">
+Agent [[${transaction.agentId}]] assigned to trip [[${transaction.tripId}]] with [[${transaction.tripStatus}]] status to execute following tasks [[${transaction.getNotificationInfo(transaction.getNotificationRecipient(), "AGENT_PARENT", null).getTaskIds()}]]
+</html>
