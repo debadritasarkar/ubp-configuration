@@ -1,0 +1,56 @@
+<hazelcast xsi:schemaLocation=""
+           xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <group>
+        <name>development</name> <!-- development, staging, production -->
+        <password>development</password>
+    </group>
+
+    <management-center enabled="false">http://localhost:9007/</management-center>
+
+    <network>
+        <!--
+           In case of multi node installation, mark tcp-ip enabled = true
+           and give the list of IP of other nodes in <member> like
+                <member>10.10.2.198</member>
+                <member>10.10.2.199</member>
+
+          In such case also mark interfaces enabled = true
+          and in <interface> give the IP scheme of nodes having installation of ers-integration-services
+        -->
+        <join>
+            <multicast enabled="false"/>
+            <tcp-ip enabled="false">
+                <member>10.10.2.199</member>
+            </tcp-ip>
+        </join>
+
+
+        <interfaces enabled="false">
+            <interface>10.10.2.*</interface>
+        </interfaces>
+
+    </network>
+
+    <map name="securityCacheMap">
+
+        <in-memory-format>OBJECT</in-memory-format>
+        <statistics-enabled>true</statistics-enabled>
+        <time-to-live-seconds>1800</time-to-live-seconds> <!-- max session time in seconds, 1800 = 30 minutes -->
+        <max-size>2000</max-size>
+        <eviction-percentage>20</eviction-percentage>
+
+    </map>
+
+    <map name="zdsSecurityCacheMap">
+
+        <in-memory-format>OBJECT</in-memory-format>
+        <statistics-enabled>true</statistics-enabled>
+        <time-to-live-seconds>86400</time-to-live-seconds> <!-- max session time in seconds, 86400 = 1 day -->
+        <max-size>2000</max-size>
+        <eviction-percentage>20</eviction-percentage>
+
+    </map>
+
+</hazelcast>
