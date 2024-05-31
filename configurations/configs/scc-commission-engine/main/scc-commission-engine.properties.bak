@@ -1,0 +1,112 @@
+# Properties for module scc-commission-engine
+
+######## Spring Application configurations ####################################
+spring.application.name=scc-commission-engine
+server.contextpath=/${spring.application.name}
+server.host=0.0.0.0
+server.port=9259
+
+### scc-commission-engine: log4j logging config file
+logging.config=/opt/seamless/conf/scc-commission-engine/log4j2.xml
+
+### Tax Calculation Groovy Script Location
+scripts_directory=/opt/seamless/conf/scc-commission-engine/scripts/
+
+######### Database Config Starts ##############
+database.name=scccommission
+database.db_driver=org.mariadb.jdbc.Driver
+database.db_url=jdbc:mariadb://localhost:3306/scccommission
+database.db_user=refill
+database.db_password=refill
+database.maximum_pool_size=20
+database.pool_name=sms
+database.minimum_idle=2
+########## Database Config Ends ##############
+
+################ RabbitMq Properties Starts ##########################
+## RabbitMq Producer
+rabbitmq-producer-props.connectionName=${spring.application.name}-emitter
+rabbitmq-producer-props.host=localhost
+rabbitmq-producer-props.port=5672
+rabbitmq-producer-props.userName=guest
+rabbitmq-producer-props.userPasswd=guest
+
+# RabbitMq producer: exchange, routing-key(s) & queue-name(s)
+rabbitmq-producer-props.direct-exchange-name=scc-commission-direct-exchange-dev
+rabbitmq-producer-props.success-routing-key=scc-commission-success-routing-key-dev
+rabbitmq-producer-props.success-queue-name=scc-commission-success-queue-dev
+rabbitmq-producer-props.failure-routing-key=scc-commission-failure-routing-key-dev
+rabbitmq-producer-props.failure-queue-name=scc-commission-failure-queue-dev
+
+# RabbitMq producer acknowledge wait time in (milli-seconds)
+rabbitmq-producer-props.acknowledge-wait-time=10000
+
+## RabbitMq Consumer
+rabbitmq-consumer-props.connectionName=${spring.application.name}-listener
+rabbitmq-consumer-props.host=localhost
+rabbitmq-consumer-props.port=5672
+rabbitmq-consumer-props.userName=guest
+rabbitmq-consumer-props.userPasswd=guest
+
+# RabbitMq consumer queue-names
+rabbitmq-consumer-props.queueNames=scc-aggregator-success-queue-dev
+################ RMQ Properties Ends############################
+
+################# Campaign Client Config Starts #####################
+campaign.management.uri=http://localhost:9596/scc
+campaign.management.api.get.campaign.by.id=/v1/campaign/
+campaign.management.api.get.campaign.notification.data.by.uid=/v1/notification/campaign/
+################# Campaign Client Config Starts #####################
+
+################ SYSTEM-TOKEN CONFIG ########################
+authorization.value=auth
+system.token.isTokenEncrypt=false
+system.token.encryptionKey=
+system.token.value={"ersReference":"1000000000001","startTime":1617446496,"rootComponent":"scccommissionengine","context":{"client":{"channel":"Web","clientId":"DCAGENT-1-1-1"},"initiator":{"uid":"DEALER1-1","typ":"RESELLERUSERNAME","rtp":"Direct Channel Agent"}}}
+################ SYSTEM-TOKEN ENDS ########################
+
+
+
+#-------------------------------------------------------------------------------------
+# Data feed version
+#-------------------------------------------------------------------------------------
+dataFeed.version=1
+dataFeed.componentName=scccommissionengine
+dataFeed.eventType=Report
+dataFeed.freemarker.file.path=/opt/seamless/conf/scc-commission-engine/templates/tdr
+#-------------------------------------------------------------------------------------
+# Data feed executor service
+#-------------------------------------------------------------------------------------
+threadpoolmanager.pools.dataFeed.targetId=com.seamless.common.data.dump.dataFeed
+threadpoolmanager.pools.dataFeed.corePoolSize=25
+threadpoolmanager.pools.dataFeed.maxPoolSize=40
+threadpoolmanager.pools.dataFeed.keepAliveTime=60000
+threadpoolmanager.pools.dataFeed.keepAliveTimeUnit=MILLISECONDS
+#-------------------------------------------------------------------------------------
+# Data feed templates
+#-------------------------------------------------------------------------------------
+template.TAX_COMMISSION_SUCCESS=taxCommissionFeed.ftl
+template.TAX_COMMISSION_FAILURE=commission_tax_failure.ftl
+
+#Field mappings
+scc.commission.tax.scc_status.key=sccStatus
+
+#Notification
+notification.link.uri=http://localhost:8277/
+notification.api.endpoint=register-generic-notification
+#Email list for sending commission calculation failure error email
+scc.commission.tax.failure.notification.emails=demo@seamless.se
+notification.management.commission.success.notification.templates=sccCommissionSuccessNotificationTemplate
+notification.management.commission.failure.notification.templates=sccCommissionFailureNotificationTemplate
+# -1 means no limit #
+#scc.commission.calculation.failure.logs.line.limit=-1
+scc.commission.calculation.failure.logs.line.limit=8
+
+##### tax configuration ####
+
+exclude_reseller_types_for_tax_calculation = agent,udsr,scd,Operator,POS,SubDistributor,Distributor,FranchiseShop,Bank,Warehouse,SUBSCRIBER_PROXY,ASM,OperatorAgent,AdhocUser
+
+############# Web Client properties Start ################################
+web.client.http.max.idle=50000
+web.client.http.connection.timeout=20000
+############# Web Client properties End ################################

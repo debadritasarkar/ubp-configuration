@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Properties>
+        <Property name="APP_LOG_ROOT">/var/seamless/log/scc-payout-engine</Property>
+        <Property name="APP_LOG_FILE_NAME">scc-payout-engine.log</Property>
+        <Property name="INSTANT_PAYOUT_LOG_FILE_NAME">scc-batch-payout.log</Property>
+        <Property name="BATCH_PAYOUT_LOG_FILE_NAME">scc-batch-payout.log</Property>
+        <Property name="BATCH_INFO_LOG_FILE_NAME">scc-batch-info.log</Property>
+        <Property name="ADJUSTMENT_FILE_NAME">scc-payout-adjustment.log</Property>
+        <Property name="APP_DUMP_FILE_NAME">scc-payout-engine-data.dump</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="LogToConsole" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{ISO8601} %-5p [%c{1}] - %X{ersReference} %m%n"/>
+        </Console>
+
+        <RollingFile name="LogToFile" fileName="${APP_LOG_ROOT}/${APP_LOG_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_LOG_FILE_NAME}.%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%d{ISO8601} %-5p [%c{1}] %t - %X{ersReference} %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="LogToInstantPayoutFile" fileName="${APP_LOG_ROOT}/${INSTANT_PAYOUT_LOG_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_LOG_FILE_NAME}.%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%d{ISO8601} %-5p [%c{1}] %t - %X{ersReference} %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="LogToBatchPayoutFile" fileName="${APP_LOG_ROOT}/${BATCH_PAYOUT_LOG_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_LOG_FILE_NAME}.%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%d{ISO8601} %-5p [%c{1}] %t - %X{ersReference} %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="LogToBatchInfoFile" fileName="${APP_LOG_ROOT}/${BATCH_INFO_LOG_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_LOG_FILE_NAME}.%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%d{ISO8601} %-5p [%c{1}] %t - %X{ersReference} %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="LogToAdjustmentFile" fileName="${APP_LOG_ROOT}/${ADJUSTMENT_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_LOG_FILE_NAME}.%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%d{ISO8601} %-5p [%c{1}] %t - %X{ersReference} %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="data-feed-appender" fileName="${APP_LOG_ROOT}/${APP_DUMP_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_DUMP_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="LogToConsole"/>
+        </Root>
+
+        <Logger name="org.springframework.boot" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.service" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.service.impl" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.transformers" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.job" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.job.InstantPayoutJob" level="DEBUG" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="LogToInstantPayoutFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.job.BatchPayoutJob" level="DEBUG" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="LogToBatchPayoutFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.job.BatchInfoDataJob" level="DEBUG" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="LogToBatchInfoFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.job.AdjustmentPayoutJob" level="DEBUG" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="LogToAdjustmentFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.controller" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.controller" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.client" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.config.rabbitmq.consumer" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.config" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="com.seamless.common.data.dump.DataFeeder" level="INFO" additivity="false">
+            <AppenderRef ref="data-feed-appender"/>
+        </Logger>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Properties>
+        <Property name="APP_LOG_ROOT">/var/seamless/log/scc-live-data-ingestor</Property>
+        <Property name="APP_LOG_FILE_NAME">scc-live-data-ingestor.log</Property>
+        <Property name="APP_DUMP_FILE_NAME">scc-live-data-ingestor-data.dump</Property>
+        <Property name="APP_SiebelMNPDataParser_FILE_NAME">SiebelMNPDataParser.log</Property>
+        <Property name="APP_CBSInvoiceInfoParser_FILE_NAME">CBSInvoiceInfoParser.log</Property>
+        <Property name="APP_CBSPaymentInfoParser_FILE_NAME">CBSPaymentInfoParser.log</Property>
+        <Property name="APP_FCABIDataParser_FILE_NAME">FCABIDataParser.log</Property>
+        <Property name="APP_FCABVSSimSaleParser_FILE_NAME">FCABVSSimSaleParser.log</Property>
+        <Property name="APP_GreyListParser_FILE_NAME">GreyListParser.log</Property>
+        <Property name="APP_SiebelActivityReportParser_FILE_NAME">SiebelActivityReportParser.log</Property>
+        <Property name="APP_SeibelPostpaidTerminationParser_FILE_NAME">SeibelPostpaidTerminationParser.log</Property>
+        <Property name="APP_SiebelB2CSalesParser_FILE_NAME">SiebelB2CSalesParser.log</Property>
+        <Property name="APP_SCCTxeParser_FILE_NAME">SCCTxeParser.log</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="LogToConsole" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{ISO8601} %-5p [%c{1}] - %X{ersReference} %m%n"/>
+        </Console>
+
+        <RollingFile name="LogToFile" fileName="${APP_LOG_ROOT}/${APP_LOG_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_LOG_FILE_NAME}.%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%d{ISO8601} %-5p [%c{1}] %t - %X{ersReference} %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="data-feed-appender" fileName="${APP_LOG_ROOT}/${APP_DUMP_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_DUMP_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-SiebelMNPDataParser-appender" fileName="${APP_LOG_ROOT}/${APP_SiebelMNPDataParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_SiebelMNPDataParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-CBSInvoiceInfoParser-appender" fileName="${APP_LOG_ROOT}/${APP_CBSInvoiceInfoParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_CBSInvoiceInfoParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-CBSPaymentInfoParser-appender" fileName="${APP_LOG_ROOT}/${APP_CBSPaymentInfoParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_CBSPaymentInfoParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-FCABIDataParser-appender" fileName="${APP_LOG_ROOT}/${APP_FCABIDataParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_FCABIDataParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-FCABVSSimSaleParser-appender" fileName="${APP_LOG_ROOT}/${APP_FCABVSSimSaleParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_FCABVSSimSaleParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-GreyListParser-appender" fileName="${APP_LOG_ROOT}/${APP_GreyListParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_GreyListParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-SiebelActivityReportParser-appender" fileName="${APP_LOG_ROOT}/${APP_SiebelActivityReportParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_SiebelActivityReportParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-SeibelPostpaidTerminationParser-appender" fileName="${APP_LOG_ROOT}/${APP_SeibelPostpaidTerminationParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_SeibelPostpaidTerminationParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-SiebelB2CSalesParser-appender" fileName="${APP_LOG_ROOT}/${APP_SiebelB2CSalesParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_SiebelB2CSalesParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="groovy-SCCTxeParser-appender" fileName="${APP_LOG_ROOT}/${APP_SCCTxeParser_FILE_NAME}"
+                     append="true"
+                     filePattern="${APP_LOG_ROOT}/${APP_SCCTxeParser_FILE_NAME}-%d{yyyy-MM-dd}">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.springframework.boot" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="se.seamless" level="DEBUG" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="etm.core.monitor" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Logger name="etm-result" level="INFO" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+
+        <Root level="INFO">
+            <AppenderRef ref="LogToFile"/>
+            <AppenderRef ref="LogToConsole"/>
+        </Root>
+
+        <Logger name="com.seamless.common.data.dump.DataFeeder" level="INFO" additivity="false">
+            <AppenderRef ref="data-feed-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-SiebelMNPDataParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-CBSInvoiceInfoParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-CBSPaymentInfoParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-FCABIDataParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-FCABVSSimSaleParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-GreyListParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-SiebelActivityReportParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-SeibelPostpaidTerminationParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-SiebelB2CSalesParser-appender"/>
+        </Logger>
+
+        <Logger name="se.seamless.scc.scripts" level="DEBUG" additivity="false">
+            <AppenderRef ref="groovy-SCCTxeParser-appender"/>
+        </Logger>
+
+    </Loggers>
+
+</Configuration>

@@ -1,0 +1,59 @@
+# Properties for module scc-engine
+
+######## Spring Application configurations ####################################
+spring.application.name=scc-std-link
+server.port=9597
+server.servlet.context-path=/${spring.application.name}
+
+### scc-engine: log4j logging config file
+logging.config=/opt/seamless/conf/scc-std-link/log4j2.xml
+
+
+##### SYSTEM-TOKEN CONFIG Starts ##############
+authorization.value=auth
+system.token.isTokenEncrypt=false
+system.token.encryptionKey=
+system.token.value={"ersReference":"202301171137326090128107","startTime":1673955452,"rootComponent":"pms","context":{"client":{"channel":"web"},"initiator":{"uid":"Operator","typ":"RESELLERUSERNAME","rtp":"Operator","rid":"Operator","roleId":"Super_user","rmsisdn":"467000000000","resellerPath":"Operator"}}}
+##### SYSTEM-TOKEN CONFIG Ends ################
+
+##################### Message Resource Properties Starts ########################
+locale.message.path=/opt/seamless/conf/scc-std-link
+locale.message.prefix=messages
+locale.message.defaultLocale=en-US
+locale.message.supportedLocale=en-US,fr,ar
+##################### Message Resource Properties Ends ##########################
+
+############# Web Client properties Start ################################
+web.client.http.max.idle=50000
+web.client.http.connection.timeout=20000
+############# Web Client properties End ################################
+
+################ RabbitMq Properties Starts ##############################
+## RabbitMq Producer
+rabbitmq-producer-props.connectionName=scc-std-link-emitter
+rabbitmq-producer-props.host=localhost
+rabbitmq-producer-props.port=5672
+rabbitmq-producer-props.userName=guest
+rabbitmq-producer-props.userPasswd=guest
+
+# RabbitMq producer: exchange, routing-key(s) & queue-name(s)
+rabbitmq-producer-props.direct-exchange-name=scc-engine-exchange-dev
+
+# RabbitMq producer acknowledge wait time in (milli-seconds)
+rabbitmq-producer-props.acknowledgeWaitTime=60000
+
+## RabbitMq Consumer
+rabbitmq-consumer-props.connection-name=scc-std-link-listener
+rabbitmq-consumer-props.host=localhost
+rabbitmq-consumer-props.port=5672
+rabbitmq-consumer-props.user-name=guest
+rabbitmq-consumer-props.user-passwd=guest
+# RabbitMq consumer queue-names
+rabbitmq-consumer-props.queueNames=scc-engine-consumer-queue-dev
+################ RabbitMq Properties Ends ################################
+
+################ TXE Properties Stars ################################
+scc.payout.link.uri=http://localhost:8088/txe
+scc.payout.api.endpoint=/v2/requestTransferV2
+txe.request.transfer.validate-only=false
+################ TXE Properties Ends ################################
