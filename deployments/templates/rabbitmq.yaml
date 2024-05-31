@@ -1,0 +1,135 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-rabbitmq-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/rabbitmq"
+  storageClassName: manual
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-rabbitmq-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      app: rabbitmq
+  storageClassName: manual
+  volumeName: logs-rabbitmq-{{ .Values.nSpace }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: rabbitmq
+spec:
+  replicas: {{ .Values.replica.rabbitmq }}
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - rabbitmq
+            topologyKey: "kubernetes.io/hostname"
+      {{- include "hostaliases" . | indent 6 }}
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      containers:
+      - name: rabbitmq
+        image: {{ .Values.image.rabbitmq }}
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: vol-cm-rabbitmq
+          mountPath: /etc/rabbitmq/definitions.json
+          subPath: definitions.json
+        - name: vol-cm-rabbitmq
+          mountPath: /etc/rabbitmq/rabbitmq.conf
+          subPath: rabbitmq.conf
+        - name: vol-logs-rabbitmq
+          mountPath: {{ .Values.logs }}/rabbitmq
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: {{ .Values.RABBITMQ_USER }}
+        - name: RABBITMQ_DEFAULT_PASS
+          value: {{ .Values.RABBITMQ_USER }}
+      volumes:
+      - name: vol-cm-rabbitmq
+        configMap:
+          name: cm-rabbitmq-main
+      - name: vol-logs-rabbitmq
+        persistentVolumeClaim:
+          claimName: logs-rabbitmq-{{ .Values.nSpace }}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rabbitmq
+  name: svc-rabbitmq
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - name: rabbitmq
+    port: 15672
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30090
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31090
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32090
+    {{- end }}
+    targetPort: 15672
+  - name: rabbitmq2
+    port: 5672
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30091
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31091
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32091
+    {{- end }}
+    targetPort: 5672
+  selector:
+    app: rabbitmq
+  type: NodePort

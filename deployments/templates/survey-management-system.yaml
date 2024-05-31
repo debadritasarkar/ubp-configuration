@@ -1,0 +1,155 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-survey-management-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-survey-management-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/survey-management-system"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-survey-management-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-survey-management-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  survey-management
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app:  survey-management
+spec:
+  replicas: {{ .Values.replica.surveymanagement }}
+  selector:
+    matchLabels:
+      app:  survey-management
+  template:
+    metadata:
+      labels:
+        app:  survey-management
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - survey-management
+            topologyKey: "kubernetes.io/hostname"
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      initContainers:
+      - name: copy-configs
+        image: centos
+        imagePullPolicy: IfNotPresent
+        command: ['bash','/scripts/configs-copy']
+        volumeMounts:
+        - name: config-dir-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-cm-main
+          mountPath: /main
+        - name: vol-cm-survey-management-main
+          mountPath: /survey-management-main
+        - name: vol-cm-survey-management-tdr
+          mountPath: /survey-management-tdr
+        - name: vol-cm-survey-management-notification
+          mountPath: /survey-management-notification
+        - name: vol-cm-survey-management-copy
+          mountPath: /scripts
+    {{- include "hostaliases" . | indent 6 }}
+      containers:
+        - name: survey-management
+          image: {{ .Values.image.surveymanagement }}
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 9596
+          {{- if eq .Values.resourceApply true }}
+          resources:
+            limits:
+              cpu: '1'
+              memory: 3Gi
+            requests:
+              cpu: '0.5'
+              memory: 2Gi
+          {{- end }}
+          volumeMounts:
+          - name: tz-{{ .Values.country }}
+            mountPath: /etc/localtime
+          - name: config-dir-main
+            mountPath: {{ .Values.conf }}
+          - name: vol-logs-survey-management
+            mountPath: {{ .Values.logs }}/survey-management-system
+      volumes:
+      - name: tz-{{ .Values.country }}
+        hostPath:
+          path: /usr/share/zoneinfo/{{ .Values.timzone }}
+      - name: vol-cm-main
+        configMap:
+          name: cm-main
+      - name: vol-cm-survey-management-main
+        configMap:
+          name: cm-survey-management-main
+      - name: vol-cm-survey-management-notification
+        configMap:
+          name: cm-survey-management-notification
+      - name: vol-cm-survey-management-tdr
+        configMap:
+          name: cm-survey-management-tdr
+      - name: vol-logs-survey-management
+        persistentVolumeClaim:
+          claimName: logs-survey-management-{{ .Values.nSpace }}
+      - name: config-dir-main
+        emptyDir: {}
+      - name: vol-cm-survey-management-copy
+        configMap:
+          name: cm-survey-management-copy
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: survey-management
+  name: svc-survey-management
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 9596
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30058
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31058
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32058
+    {{- end }}
+    targetPort: 9596
+  selector:
+    app: survey-management
+  type: NodePort

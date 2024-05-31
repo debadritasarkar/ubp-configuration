@@ -1,0 +1,158 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-scc-std-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-scc-std-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/scc-std-link"
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-scc-std-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-scc-std-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scc-std
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: scc-std
+    version: v1
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxSurge:  40%
+       maxUnavailable: 20%
+  selector:
+    matchLabels:
+      app: scc-std
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: scc-std
+        version: v1
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - scc-std
+            topologyKey: "kubernetes.io/hostname"
+      {{- include "hostaliases" . | indent 6 }}
+      containers:
+      - name: scc-std
+        image: {{ .Values.image.sccstd }}
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 9597
+        readinessProbe:
+          tcpSocket:
+            port: 9597
+          initialDelaySeconds: 40
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 9597
+          initialDelaySeconds: 40
+          periodSeconds: 20
+        {{- if eq .Values.apm_client true }}
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: " -Xms3000M -Xmx4000M -XX:PermSize=512m -XX:+UseG1GC  -XX:InitiatingHeapOccupancyPercent=70  -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -XX:ActiveProcessorCount=7 -javaagent:/apmjar/{{ .Values.apm_jar }} -Delastic.apm.service_name=scc-std -Delastic.apm.server_urls=http://{{ .Values.apm_server }}:8200 -Delastic.apm.secret_token= -Delastic.apm.environment=ers -Delastic.apm.application_packages=se.seamless.scc"
+        {{- end }}
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: tz-{{ .Values.country }}
+          mountPath: /etc/localtime
+        - name: vol-cm-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-cm-scc-std-main
+          mountPath: {{ .Values.conf }}/scc-std-link
+        - name: vol-logs-scc-std
+          mountPath: {{ .Values.logs }}/scc-std-link
+        {{- if eq .Values.jar_volume true }}
+        - name: vol-logs-apmjar
+          mountPath: /apmjar
+        {{- end }}
+      volumes:
+      - name: tz-{{ .Values.country }}
+        hostPath:
+          path: /usr/share/zoneinfo/{{ .Values.timzone }}
+      - name: vol-cm-main
+        configMap:
+          name: cm-main
+      - name: vol-cm-scc-std-main
+        configMap:
+          name: cm-scc-std-main
+      - name: vol-logs-scc-std
+        persistentVolumeClaim:
+          claimName: logs-scc-std-{{ .Values.nSpace }}
+      {{- if eq .Values.jar_volume true }}
+      - name: vol-logs-apmjar
+        persistentVolumeClaim:
+          claimName: logs-apmjar-{{ .Values.nSpace }}
+      {{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: scc-std
+  name: svc-scc-std
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 9597
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30066
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 30066
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32066
+    {{- end }}
+    targetPort: 9597
+  selector:
+    app: scc-std
+  type: NodePort

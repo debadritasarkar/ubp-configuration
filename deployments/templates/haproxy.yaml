@@ -1,0 +1,129 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haproxy
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: haproxy
+spec:
+  replicas: {{ .Values.replica.haproxy }}
+  selector:
+    matchLabels:
+      app: haproxy
+  template:
+    metadata:
+      labels:
+        app: haproxy
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - haproxy
+            topologyKey: "kubernetes.io/hostname"
+      {{- include "hostaliases" . | indent 6 }}
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      containers:
+      - name: haproxy
+        image: {{ .Values.image.haproxy }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4306
+        - containerPort: 5306
+        - containerPort: 6379
+        - containerPort: 2188
+        - containerPort: 9092
+        - containerPort: 13013
+        - containerPort: 8917
+        - containerPort: 8010
+        - containerPort: 8192
+        - containerPort: 9200
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: vol-cm-haproxy
+          mountPath: /usr/local/etc/haproxy/haproxy.cfg
+          subPath: haproxy.cfg
+      volumes:
+      - name: vol-cm-haproxy
+        configMap:
+          name: cm-haproxy-main
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: haproxy
+  name: svc-haproxy
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - name: dbt
+    port: 4306
+    targetPort: 4306
+  - name: dbr
+    port: 5306
+    targetPort: 5306
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  - name: zookeeper
+    port: 2188
+    targetPort: 2188
+  - name: kafka
+    port: 9092
+    targetPort: 9092
+  - name: kannel
+    port: 13013
+    targetPort: 13013
+  - name: biengine
+    port: 8917
+    targetPort: 8917
+  - name: diameter
+    port: 8010
+    targetPort: 8010
+  - name: logstash
+    port: 5094
+    targetPort: 5094
+  - name: elastic
+    port: 9200
+    targetPort: 9200
+  selector:
+    app: haproxy
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: haproxy
+  name: svc-haproxy2
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 1936
+    targetPort: 1936
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30036
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31036
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32036
+    {{- end }}
+  selector:
+    app: haproxy
+  type: NodePort

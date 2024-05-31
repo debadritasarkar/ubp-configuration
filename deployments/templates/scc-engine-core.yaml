@@ -1,0 +1,164 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-scc-engine-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-scc-engine-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/scc-engine-core"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-scc-engine-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-scc-engine-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scc-engine
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: scc-engine
+spec:
+  replicas: {{ .Values.replica.sccengine }}
+  selector:
+    matchLabels:
+      app: scc-engine
+  template:
+    metadata:
+      labels:
+        app: scc-engine
+    spec:
+      affinity:
+       podAntiAffinity:
+         requiredDuringSchedulingIgnoredDuringExecution:
+         - labelSelector:
+             matchExpressions:
+             - key: app
+               operator: In
+               values:
+               - scc-engine
+           topologyKey: kubernetes.io/hostname
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      initContainers:
+      - name: copy-configs
+        image: centos
+        imagePullPolicy: IfNotPresent
+        command: ['bash','/scripts/configs-copy']
+        volumeMounts:
+        - name: config-dir-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-cm-main
+          mountPath: /main
+        - name: vol-cm-scc-engine-main
+          mountPath: /scc-engine-main
+        - name: vol-cm-scc-engine-templates
+          mountPath: /scc-engine-templates
+        - name: vol-cm-scc-engine-copy
+          mountPath: /scripts
+      {{- include "hostaliases" . | indent 6 }}
+      containers:
+      - name: scc-engine
+        image: {{ .Values.image.sccengine }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9596
+        {{- if eq .Values.apm_client true }}
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: " -Xms3000M -Xmx4000M -XX:PermSize=512m -XX:+UseG1GC  -XX:InitiatingHeapOccupancyPercent=70  -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -XX:ActiveProcessorCount=7 -javaagent:/apmjar/{{ .Values.apm_jar }} -Delastic.apm.service_name=scc-engine -Delastic.apm.server_urls=http://{{ .Values.apm_server }}:8200 -Delastic.apm.secret_token= -Delastic.apm.environment=ers -Delastic.apm.application_packages=se.seamless.scc"
+        {{- end }}
+	{{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: tz-{{ .Values.country }}
+          mountPath: /etc/localtime
+        - name: config-dir-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-logs-scc-engine
+          mountPath: {{ .Values.logs }}/scc-engine-core
+        {{- if eq .Values.jar_volume true }}
+        - name: vol-logs-apmjar
+          mountPath: /apmjar
+        {{- end }}
+      volumes:
+      - name: tz-{{ .Values.country }}
+        hostPath:
+          path: /usr/share/zoneinfo/{{ .Values.timzone }}
+      - name: vol-cm-main
+        configMap:
+          name: cm-main
+      - name: vol-cm-scc-engine-main
+        configMap:
+          name: cm-scc-engine-main
+      - name: vol-cm-scc-engine-templates
+        configMap:
+          name: cm-scc-engine-templates
+      - name: vol-logs-scc-engine
+        persistentVolumeClaim:
+          claimName: logs-scc-engine-{{ .Values.nSpace }}
+      - name: config-dir-main
+        emptyDir: {}
+      - name: vol-cm-scc-engine-copy
+        configMap:
+          name: cm-scc-engine-copy
+      {{- if eq .Values.jar_volume true }}
+      - name: vol-logs-apmjar
+        persistentVolumeClaim:
+          claimName: logs-apmjar-{{ .Values.nSpace }}
+      {{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: scc-engine
+  name: svc-scc-engine
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 9596
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30067
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31067
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32067
+    {{- end }}
+    targetPort: 9596
+  selector:
+    app: scc-engine
+  type: NodePort

@@ -1,0 +1,163 @@
+# NAMSPACE
+nSpace: ers
+
+# COUNTRY & TIMEZONE
+timzone: Asia/Dhaka
+country: bangladesh
+
+# DOCKER-REGISTRY LOGIN & SECRET
+imageCredentials:
+  registry: index.docker.io
+  username:
+  password:
+secret: docker-repo-login
+
+MYSQL_ROOT_PASSWORD:
+RABBITMQ_USER: guest
+MINIO_KEY: seamless
+
+# CONF
+conf: /opt/seamless/conf
+
+# LOGS
+logs: /var/seamless/log
+
+# DOCKER IMAGE
+image:
+  haproxy: sdshubdocker/haproxy:talha
+  coreproxy: sdsdockerhub/ers-coreproxy:1.78.0
+  businesslogic: sdsdockerhub/ers-businesslogic:3.58.2
+  accountmanagement: sdsdockerhub/account-management-service:1.22.0
+  accessmanagement: sdsdockerhub/access-management-system:feature-UBP-1795-2
+  #accessmanagement: sdsdockerhub/access-management-system:1.23.1
+  #accessmanagement: sdsdockerhub/access-management-system:1.22.0
+  contractmanagement: sdsdockerhub/ers-contract-management-system:2.32.0
+  dealermanagement: sdsdockerhub/ers-dealer-management-system:1.128.0
+  groupmanagement: sdsdockerhub/group-management-system:1.46.0
+  imsbridge: sdsdockerhub/ers-ims-bridge:1.18.0
+  #inventorymanagement: sdsdockerhub/inventory-management-system:feature-UBP-1643-6
+  inventorymanagement: sdsdockerhub/inventory-management-system:feature-UBP-1643-7
+  kyc: sdsdockerhub/ers-kycsystem:1.60.0
+  notificationmanager: sdsdockerhub/ers-notification-manager:1.23.0
+  #ordermanagement: sdsdockerhub/order-management-system:feature-UBP-1862-2
+  #ordermanagement: sdsdockerhub/order-management-system:feature-UBP-1862-3
+  #ordermanagement: sdsdockerhub/order-management-system:feature-UBP-1862-6
+  #ordermanagement: sdsdockerhub/order-management-system:feature-UBP-1862-7
+  #ordermanagement: sdsdockerhub/order-management-system:feature-UBP-1862-8
+  #ordermanagement: sdsdockerhub/order-management-system:feature-UBP-1862-9
+  #ordermanagement: sdsdockerhub/order-management-system:feature-UBP-1862-10
+  ordermanagement: sdsdockerhub/order-management-system:feature-UBP-1862-11
+  productmanagement: sdsdockerhub/product-management-system:1.46.0
+  subscribersystem: sdsdockerhub/ers-subscribersystem:3.43.0
+  templatemanagement: sdsdockerhub/template-management-system:1.11.1
+  identitymanagement: sdsdockerhub/ers-identity-management:1.66.0
+  #identitymanagement: sdsdockerhub/ers-identity-management:1.64.0
+  kafka: sdshubdocker/kafka:latest-vfo
+  txe: sdsdockerhub/ers-txe:3.415.0
+  #txe: sdsdockerhub/ers-txe:feature-UBP-1464-6
+  mariadb: sdsdockerhub/mariadb:10.4.17
+  objectstore: sdsdockerhub/object-store-manager:1.13.0
+  minio: sdsdockerhub/minio:latest
+  configservices: sdsdockerhub/ers-config-services:1.12.2
+  integrationservices: sdsdockerhub/ers-integration-services:1.105.1
+  #integrationservices: sdsdockerhub/ers-integration-services:1.104.0
+  #nginx: sdsdockerhub/nginx-nonroot:v7
+  nginx: nginx:mainline-alpine3.18
+  accountlink: sdsdockerhub/ers-accountlinksimulator:3.4.0
+  #agentassignment: sdsdockerhub/agent-assignment-system:1.28.0
+  agentassignment: sdsdockerhub/agent-assignment-system:feature-UBP-1820-2
+  alertapp: sdsdockerhub/ers-alertapp-webservice:1.47.0
+  batchscheduling: sdsdockerhub/batch-scheduling-system:1.48.0
+  billingsettlement: sdsdockerhub/billing-settlement-system:1.11.0
+  diameterlink: sdsdockerhub/ers-diameter-link:1.9.2
+  diametersimulator: sdsdockerhub/ers-diameter-simulator:1.3.0
+  filebeat: elastic/filebeat:8.6.0
+  ldaplink: sdsdockerhub/ers-ldaplink:1.15.0
+  linksimulator: sdsdockerhub/ers-link-simulator:1.21.0
+  notificationui: sdsdockerhub/ers-notification-ui:1.19.0
+  otpmanagement: sdsdockerhub/otp-management-system:1.8.1
+  rabbitmq: sdsdockerhub/rabbitmq-ubp:3.10.7
+  referencegenerator: sdsdockerhub/ers-reference-generator:1.54.2
+  regionmanagement: sdsdockerhub/ers-region-management:1.15.0
+  scccommission: sdsdockerhub/scc-commission-engine:1.5.1
+  sccengine: sdsdockerhub/scc-engine:1.5.2
+  sccingestor: sdsdockerhub/scc-live-data-ingestor:1.5.2
+  sccpayout: sdsdockerhub/scc-payout-engine:1.4.2
+  sccstd: sdsdockerhub/scc-std-link:1.1.0
+  surveymanagement: sdsdockerhub/survey-management-system:1.9.0
+  tripscheduler: sdsdockerhub/trip-management-scheduler:1.29.0
+  tripmanagement: sdsdockerhub/trip-management-system:1.29.0
+  ussdapp: sdsdockerhub/ers-ussdapp:2.200.0
+  #biengine: sdsdockerhub/bi-engine:1.30.0
+  biengine: sdsdockerhub/bi-engine:1.42.0
+  redis: redis:6.2.3-alpine
+  imscompanion: sdsdockerhub/ims-companion:feature-UBP-1643-8
+
+# NUMBER OF REPLICAS
+replica:
+  haproxy: 1
+  coreproxy: 1
+  businesslogic: 1
+  accountmanagement: 1
+  accessmanagement: 1
+  contractmanagement: 1
+  dealermanagement: 1
+  groupmanagement: 1
+  imsbridge: 1
+  inventorymanagement: 1
+  kyc: 1
+  notificationmanager: 1
+  ordermanagement: 1
+  productmanagement: 1
+  subscribersystem: 1
+  templatemanagement: 1
+  identitymanagement: 1
+  kafka: 1
+  txe: 1
+  objectstore: 1
+  minio: 1
+  configservices: 1
+  integrationservices: 1
+  nginx: 1
+  accountlink: 1
+  agentassignment: 1
+  alertapp: 1
+  batchscheduling: 1
+  billingsettlement: 1
+  diameterlink: 1
+  diametersimulator: 1
+  ldaplink: 1
+  linksimulator: 1
+  notificationui: 1
+  otpmanagement: 1
+  rabbitmq: 1
+  referencegenerator: 1
+  regionmanagement: 1
+  scccommission: 1
+  sccengine: 1
+  sccingestor: 1
+  sccpayout: 1
+  sccstd: 1
+  surveymanagement: 1
+  tripscheduler: 1
+  tripmanagement: 1
+  ussdapp: 1
+  biengine: 1
+  redis: 1
+  imscompanion: 1
+
+gui_node: w1
+apm_jar: elastic-apm-agent-1.36.1.jar
+apm_server: db2
+telemetry_jar: opentelemetry-javaagent.jar
+telemetry_server: 10.33.96.105
+repo:
+
+#To monitor the load test you need to either via APM/Opentelemetry you need to enable "loadTesting" and then "apmclient" or "openclient" variable.
+jar_volume: true
+apm_client: false
+telemetry_client: false
+telemetry_client1: true
+
+resourceApply: false
+resourceApply1: true

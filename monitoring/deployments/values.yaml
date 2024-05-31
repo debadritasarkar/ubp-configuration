@@ -1,0 +1,39 @@
+# NAMSPACE
+nSpace: ers
+nSpacemonitor: monitoring
+
+# COUNTRY & TIMEZONE
+timzone: Asia/Dhaka
+country: bangladesh
+
+# DOCKER-REGISTRY LOGIN & SECRET
+imageCredentials:
+  registry: index.docker.io
+  username: 
+  password: 
+secret: docker-repo-login
+
+MYSQL_ROOT_PASSWORD: 
+RABBITMQ_USER: guest
+MINIO_KEY: seamless
+
+# CONF
+conf: /opt/seamless/conf
+
+# LOGS
+logs: /var/seamless/log
+
+# DOCKER IMAGE
+image:
+  haproxy: sdshubdocker/haproxy:talha
+
+# NUMBER OF REPLICAS
+replica:
+  haproxy: 3
+
+jar: elastic-apm-agent-1.36.1.jar
+apm_server: gw01a
+repo: 
+
+loadTesting: false
+resourceApply: false

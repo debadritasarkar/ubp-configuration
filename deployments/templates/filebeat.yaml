@@ -1,0 +1,171 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-filebeat-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-filebeat-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/filebeat"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-filebeat-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-filebeat-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: filebeat
+spec:
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      serviceAccountName: filebeat
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - filebeat
+            topologyKey: "kubernetes.io/hostname"
+      {{- include "hostaliases" . | indent 6 }}
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      containers:
+      - name: filebeat
+        image: {{ .Values.image.filebeat }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5045
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: tz-{{ .Values.country }}
+          mountPath: /etc/localtime
+        - name: config-dir-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-cm-filebeat-main
+          mountPath: /usr/share/filebeat/filebeat.yml
+          subPath: filebeat.yml
+        - name: vol-logs-filebeat
+          mountPath: {{ .Values.logs }}/filebeat
+        - name: vol-logs-app
+          mountPath: {{ .Values.logs }}
+      volumes:
+      - name: tz-{{ .Values.country }}
+        hostPath:
+          path: /usr/share/zoneinfo/{{ .Values.timzone }}
+      - name: vol-cm-main
+        configMap:
+          name: cm-main
+      - name: vol-cm-filebeat-main
+        configMap:
+          name: cm-filebeat-main
+      - name: vol-logs-app
+        hostPath:
+          path: {{ .Values.logs }}
+      - name: vol-logs-filebeat
+        persistentVolumeClaim:
+          claimName: logs-filebeat-{{ .Values.nSpace }}
+      - name: config-dir-main
+        emptyDir: {}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: filebeat
+  name: svc-filebeat
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 5045
+    targetPort: 5045
+  selector:
+    app: filebeat
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: filebeat
+  labels:
+    k8s-app: filebeat
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: filebeat
+  labels:
+    k8s-app: filebeat
+rules:
+- apiGroups: [""]
+  resources:
+  - namespaces
+  - pods
+  - nodes
+  verbs:
+  - get
+  - watch
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: filebeat
+subjects:
+- kind: ServiceAccount
+  name: filebeat
+  namespace: {{ .Values.nSpace }}
+roleRef:
+  kind: ClusterRole
+  name: filebeat
+  apiGroup: rbac.authorization.k8s.io

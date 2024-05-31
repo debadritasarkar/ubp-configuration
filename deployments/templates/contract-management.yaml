@@ -1,0 +1,161 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-contract-management-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-contract-management-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/contract-management-system"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-contract-management-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-contract-management-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contract-management
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: contract-management
+spec:
+  replicas: {{ .Values.replica.contractmanagement }}
+  selector:
+    matchLabels:
+      app: contract-management
+  template:
+    metadata:
+      labels:
+        app: contract-management
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - contract-management
+            topologyKey: "kubernetes.io/hostname"
+      {{- include "hostaliases" . | indent 6 }}
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      containers:
+      - name: contract-management
+        image: {{ .Values.image.contractmanagement }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 38082
+        - containerPort: 35729
+        {{- if eq .Values.apm_client true }}
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-javaagent:/apmjar/{{ .Values.apm_jar }} -Delastic.apm.service_name=contract-management-system -Delastic.apm.server_urls=http://{{ .Values.apm_server }}:8200 -Delastic.apm.secret_token= -Delastic.apm.environment=ers -Delastic.apm.application_packages=se.seamless.one.contract"
+        {{- end }}
+        {{- if eq .Values.telemetry_client true }}
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-javaagent:/apmjar/{{ .Values.telemetry_jar }} -Dotel.service.name=contract-management -Dotel.traces.exporter=zipkin -Dotel.exporter.zipkin.endpoint=http://{{ .Values.telemetry_server }}:9411/api/v2/spans -Dotel.logs.exporter=otlp -Dotel.metrics.exporter=otlp -Dotel.exporter.otlp.endpoint=http://{{ .Values.telemetry_server }}:4318 -Dotel.javaagent.debug=true -Xmx256m"
+        {{- end }}
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: tz-{{ .Values.country }}
+          mountPath: /etc/localtime
+        - name: vol-cm-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-cm-contract-management-main
+          mountPath: {{ .Values.conf }}/contract-management-system
+        - name: vol-logs-contract-management
+          mountPath: {{ .Values.logs }}/contract-management-system
+        {{- if eq .Values.jar_volume true }}
+        - name: vol-logs-apmjar
+          mountPath: /apmjar
+        {{- end }}
+      volumes:
+      - name: tz-{{ .Values.country }}
+        hostPath:
+          path: /usr/share/zoneinfo/{{ .Values.timzone }}
+      - name: vol-cm-main
+        configMap:
+          name: cm-main
+      - name: vol-cm-contract-management-main
+        configMap:
+          name: cm-contract-management-main
+      - name: vol-logs-contract-management
+        persistentVolumeClaim:
+          claimName: logs-contract-management-{{ .Values.nSpace }}
+      {{- if eq .Values.jar_volume true }}
+      - name: vol-logs-apmjar
+        persistentVolumeClaim:
+          claimName: logs-apmjar-{{ .Values.nSpace }}
+      {{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: contract-management
+  name: svc-contract-management
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - name: cm1
+    port: 38082
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30001
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31001
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32001
+    {{- else }}
+    nodePort: 32001
+    {{- end }}
+    targetPort: 38082
+  - name: cm2
+    port: 35729
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30002
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31002
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32002
+    {{- end }}
+    targetPort: 35729
+  selector:
+    app: contract-management
+  type: NodePort

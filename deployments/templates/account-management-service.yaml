@@ -1,0 +1,179 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-account-management-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-account-management-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/account-management-service"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-account-management-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-account-management-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-management
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: account-management
+spec:
+  replicas: {{ .Values.replica.accountmanagement }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxSurge:  40%
+       maxUnavailable: 10%
+  selector:
+    matchLabels:
+      app: account-management
+  template:
+    metadata:
+      labels:
+        app: account-management
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - account-management
+            topologyKey: "kubernetes.io/hostname"
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      initContainers:
+      - name: copy-configs
+        image: centos
+        imagePullPolicy: IfNotPresent
+        command: ['bash','/scripts/configs-copy']
+        volumeMounts:
+        - name: config-dir-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-cm-main
+          mountPath: /main
+        - name: vol-cm-account-management-main
+          mountPath: /account-management-main
+        - name: vol-cm-account-management-templates
+          mountPath: /account-management-templates
+        - name: vol-cm-account-management-copy
+          mountPath: /scripts
+      {{- include "hostaliases" . | indent 6 }}
+      containers:
+      - name: account-management
+        image: {{ .Values.image.accountmanagement }}
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          tcpSocket:
+            port: 8092
+          initialDelaySeconds: 30
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 8092
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        ports:
+        - containerPort: 8092
+        {{- if eq .Values.apm_client true }}
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-javaagent:/apmjar/{{ .Values.apm_jar }} -Delastic.apm.service_name=account-management-service -Delastic.apm.server_urls=http://{{ .Values.apm_server }}:8200 -Delastic.apm.secret_token= -Delastic.apm.environment=ers -Delastic.apm.application_packages=se.seamless.account"
+        {{- end }}
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: tz-{{ .Values.country }}
+          mountPath: /etc/localtime
+        - name: config-dir-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-logs-account-management
+          mountPath: {{ .Values.logs }}/account-management-service
+        {{- if eq .Values.jar_volume true }}
+        - name: vol-logs-apmjar
+          mountPath: /apmjar
+        {{- end }}
+      volumes:
+      - name: tz-{{ .Values.country }}
+        hostPath:
+          path: /usr/share/zoneinfo/{{ .Values.timzone }}
+      - name: vol-cm-main
+        configMap:
+          name: cm-main
+      - name: vol-cm-account-management-main
+        configMap:
+          name: cm-account-management-main
+      - name: vol-cm-account-management-templates
+        configMap:
+          name: cm-account-management-templates
+      - name: vol-logs-account-management
+        persistentVolumeClaim:
+          claimName: logs-account-management-{{ .Values.nSpace }}
+      - name: config-dir-main
+        emptyDir: {}
+      - name: vol-cm-account-management-copy
+        configMap:
+          name: cm-account-management-copy
+      {{- if eq .Values.jar_volume true }}
+      - name: vol-logs-apmjar
+        persistentVolumeClaim:
+          claimName: logs-apmjar-{{ .Values.nSpace }}
+      {{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: account-management
+  name: svc-account-management
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 8092
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30011
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31011
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32011
+    {{- end }}
+    targetPort: 8092
+  selector:
+    app: account-management
+  type: NodePort

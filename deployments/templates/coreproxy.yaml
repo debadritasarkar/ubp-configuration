@@ -1,0 +1,159 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-coreproxy-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-coreproxy-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/coreproxy"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-coreproxy-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-coreproxy-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coreproxy
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: coreproxy
+spec:
+  replicas: {{ .Values.replica.coreproxy }}
+  selector:
+    matchLabels:
+      app: coreproxy
+  template:
+    metadata:
+      labels:
+        app: coreproxy
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - coreproxy
+            topologyKey: "kubernetes.io/hostname"
+      {{- include "hostaliases" . | indent 6 }}
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      containers:
+      - name: coreproxy
+        image: {{ .Values.image.coreproxy }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8912
+        - containerPort: 8983
+        {{- if eq .Values.apm_client true }}
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-javaagent:/apmjar/{{ .Values.apm_jar }} -Delastic.apm.service_name=coreproxy -Delastic.apm.server_urls=http://{{ .Values.apm_server }}:8200 -Delastic.apm.secret_token= -Delastic.apm.environment=ers -Delastic.apm.application_packages=com.seamless.ers.proxy"
+        {{- end }}
+        {{- if eq .Values.telemetry_client true }}
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-javaagent:/apmjar/{{ .Values.telemetry_jar }} -Dotel.service.name=coreproxy -Dotel.traces.exporter=zipkin -Dotel.exporter.zipkin.endpoint=http://{{ .Values.telemetry_server }}:9411/api/v2/spans -Dotel.logs.exporter=otlp -Dotel.metrics.exporter=otlp -Dotel.exporter.otlp.endpoint=http://{{ .Values.telemetry_server }}:4318 -Dotel.javaagent.debug=true -Xmx256m"
+        {{- end }}
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: tz-{{ .Values.country }}
+          mountPath: /etc/localtime
+        - name: vol-cm-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-cm-coreproxy-main
+          mountPath: {{ .Values.conf }}/coreproxy
+        - name: vol-logs-coreproxy
+          mountPath: {{ .Values.logs }}/coreproxy
+        {{- if eq .Values.jar_volume true }}
+        - name: vol-logs-apmjar
+          mountPath: /apmjar
+        {{- end }}
+      volumes:
+      - name: tz-{{ .Values.country }}
+        hostPath:
+          path: /usr/share/zoneinfo/{{ .Values.timzone }}
+      - name: vol-cm-main
+        configMap:
+          name: cm-main
+      - name: vol-cm-coreproxy-main
+        configMap:
+          name: cm-coreproxy-main
+      - name: vol-logs-coreproxy
+        persistentVolumeClaim:
+          claimName: logs-coreproxy-{{ .Values.nSpace }}
+      {{- if eq .Values.jar_volume true }}
+      - name: vol-logs-apmjar
+        persistentVolumeClaim:
+          claimName: logs-apmjar-{{ .Values.nSpace }}
+      {{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: coreproxy
+  name: svc-coreproxy
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - name: cp1
+    port: 8912
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30013
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31013
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32013
+    {{- end }}
+    targetPort: 8912
+  - name: cp2
+    port: 8983
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30014
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31014
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32014
+    {{- end }}
+    targetPort: 8983
+  selector:
+    app: coreproxy
+  type: NodePort

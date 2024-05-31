@@ -1,0 +1,125 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-minio-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-minio-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/minio"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-minio-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-minio-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: minio
+spec:
+  replicas: {{ .Values.replica.minio }}
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      annotations:
+      labels:
+        app: minio
+        maistra.io/expose-route: 'true'
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - minio
+            topologyKey: "kubernetes.io/hostname"
+      {{- include "hostaliases" . | indent 6 }}
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      containers:
+      - name: minio
+        image: {{ .Values.image.minio }}
+        imagePullPolicy: IfNotPresent
+        command: ['minio','server','/data']
+        env:
+        - name: DEFAULT_TIME_ZONE
+          value: "{{ .Values.timzone }}"
+        - name: tz-{{ .Values.country }}
+          value: "{{ .Values.timzone }}"
+        - name: MINIO_ACCESS_KEY
+          value: {{ .Values.MYSQL_ROOT_PASSWORD }}
+        - name: MINIO_SECRET_KEY
+          value: {{ .Values.MINIO_KEY }}
+        ports:
+          - containerPort: 9000
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: vol-logs-minio
+          mountPath: /data
+      volumes:
+      - name: vol-logs-minio
+        persistentVolumeClaim:
+          claimName: logs-minio-{{ .Values.nSpace }}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: minio
+  name: svc-minio
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 9000
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30026
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31026
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32026
+    {{- end }}
+    targetPort: 9000
+  selector:
+    app: minio
+  type: NodePort

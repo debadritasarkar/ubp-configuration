@@ -1,0 +1,204 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: {{ .Values.nSpacemonitor }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-cadvisor-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cadvisor-reader
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: {{ .Values.nSpacemonitor }}
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-cluster-admin
+  namespace: {{ .Values.nSpacemonitor }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: {{ .Values.nSpacemonitor }}
+- kind: ServiceAccount
+  name: default
+  namespace: {{ .Values.nSpacemonitor }}
+  
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus-role
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/metrics
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["get"]
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-cluster-role
+  namespace: {{ .Values.nSpacemonitor }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-role
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: {{ .Values.nSpacemonitor }}
+- kind: ServiceAccount
+  name: default
+  namespace: {{ .Values.nSpacemonitor }}
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prometheus-pv
+  namespace: {{ .Values.nSpacemonitor }}
+  labels:
+    type: local
+    name: prometheus-pv
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 15Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/var/seamless/log/prometheus"
+    type: DirectoryOrCreate
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+  namespace: {{ .Values.nSpacemonitor }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      type: local
+      name: prometheus-pv
+  storageClassName: manual
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: svc-prometheus
+    namespace: {{ .Values.nSpacemonitor }}
+    annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port:   '9090'
+spec:
+    selector:
+        app: prometheus
+    type: NodePort
+    ports:
+    - port: 8080
+      targetPort: 9090
+      nodePort: 30909
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: {{ .Values.nSpacemonitor }}
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus
+        args:
+          - '--storage.tsdb.retention=12d'
+          - '--storage.tsdb.path=/var/seamless/log/prometheus'
+          - '--config.file=/etc/prometheus/prometheus.yml'
+        ports:
+        - name: web
+          containerPort: 9090
+        volumeMounts:
+        - name: prometheus-config-volume
+          mountPath: /etc/prometheus
+        - name: prometheus-storage-volume
+          mountPath: /var/seamless/log/prometheus
+        - name: prometheus-rules
+          mountPath: /etc/prometheus/rules
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 0.5
+          limits:
+            memory: 8Gi
+            cpu: 2
+      restartPolicy: Always
+      volumes:
+      - name: prometheus-config-volume
+        configMap:
+            defaultMode: 420
+            name: cm-prometheus-main
+      - name: prometheus-rules
+        configMap:
+            defaultMode: 420
+            name: cm-prometheus-rules
+      - name: prometheus-storage-volume
+        persistentVolumeClaim:
+            claimName: prometheus-pvc

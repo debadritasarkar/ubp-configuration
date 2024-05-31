@@ -1,0 +1,140 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cadvisor
+  namespace: kube-system
+
+#---
+#apiVersion: kustomize.config.k8s.io/v1beta1
+#kind: Kustomization
+#namespace: kube-system
+#commonLabels:
+#  app: cadvisor
+#resources:
+#- daemonset.yaml
+#- namespace.yaml
+#- serviceaccount.yaml
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cadvisor-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "pods", "services", "namespaces"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["extensions"]
+  resources: ["daemonsets"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cadvisor-pod-reader
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cadvisor-pod-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cadvisor-pod-reader
+subjects:
+- kind: ServiceAccount
+  name: cadvisor
+  namespace: kube-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cadvisor-admin-role
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: cadvisor
+  namespace: kube-system
+  
+---
+apiVersion: apps/v1 
+kind: DaemonSet
+metadata:
+  name: cadvisor
+  namespace: kube-system
+  annotations:
+      seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
+spec:
+  selector:
+    matchLabels:
+      name: cadvisor
+  template:
+    metadata:
+      labels:
+        name: cadvisor
+    spec:
+      serviceAccountName: cadvisor
+      containers:
+      - name: cadvisor
+        image: gcr.io/cadvisor/cadvisor:v0.45.0
+        resources:
+          requests:
+            memory: 400Mi
+            cpu: 400m
+          limits:
+            memory: 2000Mi
+            cpu: 800m
+        volumeMounts:
+        - name: rootfs
+          mountPath: /rootfs
+          readOnly: true
+        - name: var-run
+          mountPath: /var/run
+          readOnly: true
+        - name: sys
+          mountPath: /sys
+          readOnly: true
+        - name: docker
+          mountPath: /var/lib/docker
+          readOnly: true
+        - name: disk
+          mountPath: /dev/disk
+          readOnly: true
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: rootfs
+        hostPath:
+          path: /
+      - name: var-run
+        hostPath:
+          path: /var/run
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: docker
+        hostPath:
+          path: /var/lib/docker
+      - name: disk
+        hostPath:
+          path: /dev/disk

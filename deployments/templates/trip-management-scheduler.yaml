@@ -1,0 +1,157 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-trip-management-scheduler-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-trip-management-scheduler-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/trip-management-scheduler"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-trip-management-scheduler-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-trip-management-scheduler-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trip-management-scheduler
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: trip-management-scheduler
+spec:
+  replicas: {{ .Values.replica.tripscheduler }}
+  selector:
+    matchLabels:
+      app: trip-management-scheduler
+  template:
+    metadata:
+      labels:
+        app: trip-management-scheduler
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - trip-management-scheduler
+            topologyKey: "kubernetes.io/hostname"
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      initContainers:
+      - name: copy-configs
+        image: centos
+        imagePullPolicy: IfNotPresent
+        command: ['bash','/scripts/configs-copy']
+        volumeMounts:
+        - name: config-dir-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-cm-main
+          mountPath: /main
+        - name: vol-cm-trip-management-scheduler-main
+          mountPath: /trip-management-scheduler-main
+        - name: vol-cm-trip-management-scheduler-notification
+          mountPath: /trip-management-scheduler-notification
+        - name: vol-cm-trip-management-scheduler-copy
+          mountPath: /scripts
+      {{- include "hostaliases" . | indent 6 }}
+      containers:
+      - name: trip-management-scheduler
+        image: {{ .Values.image.tripscheduler }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 12002
+        {{- if eq .Values.telemetry_client true }}
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-javaagent:/apmjar/{{ .Values.telemetry_jar }} -Dotel.service.name=trip-management-scheduler -Dotel.traces.exporter=zipkin -Dotel.exporter.zipkin.endpoint=http://{{ .Values.telemetry_server }}:9411/api/v2/spans -Dotel.logs.exporter=otlp -Dotel.metrics.exporter=otlp -Dotel.exporter.otlp.endpoint=http://{{ .Values.telemetry_server }}:4318 -Dotel.javaagent.debug=true -Xmx256m"
+        {{- end }}
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: tz-{{ .Values.country }}
+          mountPath: /etc/localtime
+        - name: config-dir-main
+          mountPath: {{ .Values.conf }}
+        - name: vol-logs-trip-management-scheduler
+          mountPath: {{ .Values.logs }}/trip-management-scheduler
+        {{- if eq .Values.jar_volume true }}
+        - name: vol-logs-apmjar
+          mountPath: /apmjar
+        {{- end }}
+      volumes:
+      - name: tz-{{ .Values.country }}
+        hostPath:
+          path: /usr/share/zoneinfo/{{ .Values.timzone }}
+      - name: vol-cm-main
+        configMap:
+          name: cm-main
+      - name: vol-cm-trip-management-scheduler-main
+        configMap:
+          name: cm-trip-management-scheduler-main
+      - name: vol-cm-trip-management-scheduler-notification
+        configMap:
+          name: cm-trip-management-scheduler-notification
+      - name: vol-logs-trip-management-scheduler
+        persistentVolumeClaim:
+          claimName: logs-trip-management-scheduler-{{ .Values.nSpace }}
+      - name: config-dir-main
+        emptyDir: {}
+      {{- if eq .Values.jar_volume true }}
+      - name: vol-logs-apmjar
+        persistentVolumeClaim:
+          claimName: logs-apmjar-{{ .Values.nSpace }}
+      {{- end }}
+      - name: vol-cm-trip-management-scheduler-copy
+        configMap:
+          name: cm-trip-management-scheduler-copy
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: trip-scheduler
+  name: svc-trip-scheduler
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 12002
+    targetPort: 12002
+  selector:
+    app: trip-scheduler
+  type: ClusterIP

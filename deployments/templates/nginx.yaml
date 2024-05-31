@@ -1,0 +1,193 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-nginx-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+  labels:
+    type: local
+    name: logs-nginx-{{ .Values.nSpace }}
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 200Mi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "{{ .Values.logs }}/nginx"
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-nginx-{{ .Values.nSpace }}
+  namespace: {{ .Values.nSpace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+  selector:
+    matchLabels:
+      type: local
+      name: logs-nginx-{{ .Values.nSpace }}
+  storageClassName: manual
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: {{ .Values.nSpace }}
+  labels:
+    app: nginx
+    version: v1
+spec:
+  replicas: {{ .Values.replica.nginx }}
+  selector:
+    matchLabels:
+      app: nginx
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: nginx
+        version: v1
+    spec:
+#      nodeName: {{ index (index (include "workerNodes" . | fromYamlArray ) 0).hostnames 0 }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - w1
+                - m1
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - nginx
+            topologyKey: "kubernetes.io/hostname"
+      dnsConfig:
+        nameservers:
+        - 8.8.8.8
+      initContainers:
+      - name: cloner
+        image: alpine/git
+        imagePullPolicy: IfNotPresent
+#        command: ['tail','-f','/dev/null']
+        command:
+        - sh
+        - -c
+        - |
+          git clone $GIT_REPO_LINK /data
+          unzip /data/guidata.zip -d /data
+          cp -r /data/html/* /usr/share/nginx/html/
+        env:
+        - name: GIT_REPO_LINK
+          valueFrom:
+            secretKeyRef:
+              name: git-secret
+              key: gitrepo
+        volumeMounts:
+        - name: empty-html
+          mountPath: /usr/share/nginx/html
+        - name: empty-data
+          mountPath: /data
+      {{- include "hostaliases" . | indent 6 }}
+      containers:
+      - name: nginx
+        image: {{ .Values.image.nginx }}
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          tcpSocket:
+            port: 18080
+          initialDelaySeconds: 30
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 18080
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        ports:
+        - containerPort: 18080
+        {{- if eq .Values.resourceApply true }}
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: '0.5'
+            memory: 2Gi
+        {{- end }}
+        volumeMounts:
+        - name: empty-html
+          mountPath: /usr/share/nginx/html
+        - name: vol-cm-nginx-main
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: vol-cm-nginx-confd
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        - name: vol-cm-nginx-services
+          mountPath: /etc/nginx/conf.d/services
+        - name: vol-cm-nginx-support
+          mountPath: /etc/nginx/conf.d/support
+        - name: vol-logs-nginx
+          mountPath: /var/seamless/log/nginx
+        - name: vol-bi-report-dir
+          mountPath: /usr/share/nginx/html/analytics/file
+      volumes:
+      - name: vol-cm-nginx-main
+        configMap:
+          name: cm-nginx-main
+      - name: vol-cm-nginx-confd
+        configMap:
+          name: cm-nginx-confd
+      - name: vol-cm-nginx-services
+        configMap:
+          name: cm-nginx-services
+      - name: vol-cm-nginx-support
+        configMap:
+          name: cm-nginx-support
+      - name: vol-logs-nginx
+        persistentVolumeClaim:
+          claimName: logs-nginx-{{ .Values.nSpace }}
+      - name: vol-bi-report-dir
+        persistentVolumeClaim:
+          claimName: bi-report-dir-{{ .Values.nSpace }}
+      - name: empty-html
+        emptyDir: {}
+      - name: empty-data
+        emptyDir: {}
+      imagePullSecrets:
+      - name: {{ .Values.secret }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx
+  name: svc-nginx
+  namespace: {{ .Values.nSpace }}
+spec:
+  ports:
+  - port: 18080
+    {{- if eq .Values.nSpace "ers-dev" }}
+    nodePort: 30070
+    {{- else if eq .Values.nSpace "ers-staging" }}
+    nodePort: 31070
+    {{- else if eq .Values.nSpace "ers" }}
+    nodePort: 32070
+    {{- end }}
+    targetPort: 18080
+  selector:
+    app: nginx
+  type: NodePort
