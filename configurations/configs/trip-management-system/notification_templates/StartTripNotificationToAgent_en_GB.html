@@ -1,0 +1,3 @@
+<html xmlns:th="http://www.thymeleaf.org" th:inline="text" th:remove="tag">
+Collect stock from collector [[${transaction.getNotificationInfo(transaction.getNotificationRecipient(), "AGENT", null).listJoin("PICKUP")}]] at warehouse [[${transaction.getNotificationInfo(transaction.getNotificationRecipient(), "AGENT", null).listJoin("WAREHOUSE")}]] bearing [[${transaction.getResellerCoordinates(transaction.getNotificationInfo(transaction.getNotificationRecipient(), "AGENT", null).getWarehouseIds())}]]
+</html>

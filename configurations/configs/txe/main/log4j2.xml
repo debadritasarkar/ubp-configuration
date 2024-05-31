@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="DEBUG">
+        <Properties>
+                <Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n</Property>
+                <Property name="APP_LOG_ROOT">/var/seamless/log/txe</Property>
+        </Properties>
+        <Appenders>
+                <RollingFile name="LogToFile" fileName="${APP_LOG_ROOT}/txe.log" filePattern="${APP_LOG_ROOT}/txe.log.%d{yyyy-MM-dd}">
+                        <PatternLayout>
+                                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+                        </PatternLayout>
+                        <TimeBasedTriggeringPolicy />
+<!--                        <SizeBasedTriggeringPolicy size="1 MB"/>-->
+                </RollingFile>
+
+                <RollingFile name="service" fileName="${APP_LOG_ROOT}/transactions.log" filePattern="${APP_LOG_ROOT}/transactions.log.%d{yyyy-MM-dd}">
+                        <PatternLayout>
+                                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+                        </PatternLayout>
+                        <TimeBasedTriggeringPolicy />
+                </RollingFile>
+
+                <RollingFile name="dataDump" fileName="${APP_LOG_ROOT}/txe-data.dump" filePattern="${APP_LOG_ROOT}/txe-data.dump.%d{yyyy-MM-dd}">
+                        <TimeBasedTriggeringPolicy />
+                </RollingFile>
+
+                <RollingFile name="LogToCsv"
+                             filePattern="${APP_LOG_ROOT}/tdr/ERS_C2S_HOURLY_%i_%d{yyyyMMddHH}.csv"
+                             immediateFlush="true">
+                        <Policies>
+                                <TimeBasedTriggeringPolicy/>
+                        </Policies>
+                        <DirectWriteRolloverStrategy/>
+                </RollingFile>
+        </Appenders>
+        <Loggers>
+                <Root level="debug" additivity="false">
+                        <AppenderRef ref="LogToFile" level="debug"/>
+                </Root>
+        </Loggers>
+        <Loggers>
+                <Logger name="com.seamless.ers.txe.businesslogic.engine.actions.CsvWriterFinalAction" level="INFO">
+                        <AppenderRef ref="LogToCsv"/>
+                </Logger>
+                <Logger name="org.apache.cxf.services.TXEResellerServiceService" level="INFO">
+                <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="org.apache.cxf.services.TXEEventCallBackServiceService" level="INFO">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="etm-result" level="WARN">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="se.seamless.ers.client.transport.ws" level="INFO">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="org.apache.cxf.interceptor.LoggingOutInterceptor" level="INFO">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="org.apache.cxf" level="WARN">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+
+                <Logger name="org.apache.cxf.services.TXESystemAdminServiceService" level="INFO">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="org.apache.cxf.services.TXETransactionExportingServiceService" level="OFF">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="org.apache.cxf.services.TXETransactionProcessingServiceService" level="INFO">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="org.apache.cxf.interceptor.LoggingInInterceptor" level="INFO">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+
+
+                <!-- avoid duplicated logs with additivity=false -->
+                <Logger name="com.seamless" level="DEBUG">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="com.seamless.ers.txe.transaction.model.ERSTransactionLog" level="info">
+                        <AppenderRef ref="service"/>
+                </Logger>
+                <Logger name="com.seamless.common.data.dump.DataFeeder" level="info">
+                        <AppenderRef ref="dataDump"/>
+                </Logger>
+
+                <Logger name="se.seamless" level="DEBUG">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+                <Logger name="org.apache.cxf" level="INFO">
+                        <AppenderRef ref="LogToFile"/>
+                </Logger>
+        </Loggers>
+</Configuration>

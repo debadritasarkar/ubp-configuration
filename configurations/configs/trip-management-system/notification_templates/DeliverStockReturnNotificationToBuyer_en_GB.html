@@ -1,0 +1,3 @@
+<html xmlns:th="http://www.thymeleaf.org" th:inline="text" th:remove="tag">
+Agent [[${transaction.agentId}]] has collected inventory against order [[${transaction.getNotificationInfo(transaction.getNotificationRecipient(), "BUYER", "RETURN_ORDER").getOrderIds()}]] to be returned.
+</html>

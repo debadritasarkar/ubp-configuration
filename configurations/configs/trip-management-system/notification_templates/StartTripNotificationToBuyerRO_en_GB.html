@@ -1,0 +1,3 @@
+<html xmlns:th="http://www.thymeleaf.org" th:inline="text" th:remove="tag">
+Agent [[${transaction.agentId}]] assigned to perform the collection of inventory for order [[${transaction.getNotificationInfo(transaction.getNotificationRecipient(), "SENDER", "RO").getOrderIds()}]] under trip [[${transaction.tripId}]]
+</html>

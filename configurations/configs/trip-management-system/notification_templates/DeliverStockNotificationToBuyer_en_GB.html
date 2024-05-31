@@ -1,0 +1,3 @@
+<html xmlns:th="http://www.thymeleaf.org" th:inline="text" th:remove="tag">
+Your inventory has been delivered by agent [[${transaction.agentId}]] for orders [[${transaction.getNotificationInfo(transaction.getNotificationRecipient(), "BUYER", "DELIVERY").getOrderIds()}]].
+</html>

@@ -1,0 +1,3 @@
+<html xmlns:th="http://www.thymeleaf.org" th:inline="text" th:remove="tag">
+Agent [[${transaction.agentId}]] has accepted the trip [[${transaction.tripId}]] containing following<th:block th:if="${!(transaction.getNotificationInfo(transaction.getNotificationRecipient(), 'SENDER', 'DELIVERY').getOrderIds()).empty}"> orders [[${transaction.getNotificationInfo(transaction.getNotificationRecipient(), "SENDER", "DELIVERY").getOrderIds()}]]</th:block><th:block th:if="${!(transaction.getNotificationInfo(transaction.getNotificationRecipient(), 'SENDER', 'DELIVERY').getTaskIds()).empty}"> tasks [[${transaction.getNotificationInfo(transaction.getNotificationRecipient(), "SENDER", "DELIVERY").getTaskIds()}]]</th:block>
+</html>

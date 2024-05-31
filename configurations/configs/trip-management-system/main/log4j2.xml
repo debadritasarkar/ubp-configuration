@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="DEBUG">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n</Property>
+        <Property name="APP_LOG_ROOT">/var/seamless/log/trip-management-system</Property>
+    </Properties>
+    <Appenders>
+        <File name="LogToFile" fileName="${APP_LOG_ROOT}/trip-management-system.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+        </File>
+        <File name="dataDump" fileName="${APP_LOG_ROOT}/trip-management-system-data.dump">
+        </File>
+        <File name="auditDump" fileName="${APP_LOG_ROOT}/trip-management-system-audit-data.dump">
+        </File>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.seamless.common.data.dump.DataFeeder" level="info">
+            <AppenderRef ref="dataDump" />
+        </Logger>
+        <!-- avoid duplicated logs with additivity=false -->
+        <Logger name="se.seamless" level="debug">
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+        <Logger name="com.seamless.common.data.dump.AuditFeeder" level="info">
+            <AppenderRef ref="auditDump" />
+        </Logger>
+        <Logger name="com.zaxxer.hikari.pool.HikariPool" level="debug">
+            <AppenderRef ref="LogToFile" />
+        </Logger>
+        <!-- <Root level="error">
+            <AppenderRef ref="LogToFile"/>
+        </Root> -->
+    </Loggers>
+</Configuration>
