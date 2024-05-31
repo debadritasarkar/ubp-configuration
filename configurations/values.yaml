@@ -1,0 +1,53 @@
+# NAMSPACE
+nSpace: ers
+
+## This section contains the details of the servers where RPM-based components
+## are running
+## i.e, Databases, Elastic-Search, Logstash, Zookeeper, Redis, Kannel &
+## Scc-data-aggregator
+
+## This info is required to generate an haproxy config that will help redirect
+## K8 components to components running outside K8 cluster via haproxy deployment
+
+## If there need be to add any other service, define a variable for those here
+## & corressponding config section in the haproxy.cfg file
+
+nonClusterComponents:
+## In case of Galera, you can add as much node as you wish in list of servers below
+  transaction_databases:
+  - name: db01
+    ip: 10.10.2.83
+
+## In case of Galera, you can add as much node as you wish in list of servers below
+  reporting_databases:
+  - name: db01
+    ip: 10.10.2.83
+
+  redis:
+  - name: db02
+    ip: 10.10.2.83
+
+  zookeeper:
+  - name: db02
+    ip: 10.10.2.83
+
+## In case of ELK cluster, you can add as much node as you wish in list of servers below
+  elasticSearch:
+  - name: db02
+    ip: 10.10.2.83
+
+  logstash:
+  - name: db02
+    ip: 10.10.2.83
+
+  diameterLink:
+  - name: db02
+    ip: 10.10.2.83
+
+  kannel:
+  - name: db02
+    ip: 10.10.2.83
+
+  scc_data_aggregator:
+  - name: db02
+    ip: 10.33.96.106
