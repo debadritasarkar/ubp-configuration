@@ -1,0 +1,264 @@
+######## Spring Application configurations ############
+spring.application.name=surveymanagement
+server.port=9596
+server.servlet.context-path=/${spring.application.name}
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=false
+spring.jackson.serialization.FAIL_ON_EMPTY_BEANS=false
+
+##### SYSTEM-TOKEN CONFIG #############
+system.token.isTokenEncrypt=false
+system.token.encryptionKey=
+
+logging.config=file:/opt/seamless/conf/survey-management-system/log4j2.xml
+
+### DEAFAULT SYSTEM TOKEN, AUTH VALUE ###
+system.token.value={  "ersReference": "87627365768275356776",  "startTime": "1614254785232",  "rootComponent": "order-management",  "context": {    "client": {      "channel": "swagger-ui",      "clientId": "OM-Swagger",      "clientReference": "survey-management-system"    },    "initiator": {      "uid": "OPERATOR",      "typ": "RESELLERUSERID",      "rtp": "operator",      "rmsisdn": "16010000",      "resellerPath": "OPERATOR",    "rid":"OPERATOR"    }  }}
+authorization.value=auth
+
+########## Database Config Starts ##############
+database.name=surveymanagement
+database.db_driver=org.mariadb.jdbc.Driver
+database.db_url=jdbc:mariadb://localhost:3306/survey_management
+database.db_user=refill
+database.db_password=refill
+database.maximum_pool_size=20
+database.pool_name=sms
+database.minimum_idle=2
+########## Database Config Ends ##############
+
+########### Elastic search configuration Starts ##########
+elasticsearch.cluster.name=elasticsearch
+elasticsearch.userName=elastic
+elasticsearch.password=seamless
+elasticsearch.1.url=localhost
+elasticsearch.1.port=9200
+#elasticsearch.2.url=localhost
+#elasticsearch.2.port=9200
+elasticsearch.httpsEnable=false
+elasticsearch.trustStoreEnable=false
+elasticsearch.trustStore.path=/opt/seamless/conf/survey-management-system/survey_management.jks
+elasticsearch.trustStore.password=seamless
+
+########### Elastic search configuration Starts ##########
+
+################# Survey ES Index configurations Starts #################
+survey.elastic.index.name=survey_
+survey.elastic.index.mapping={\"properties\":{\"id\":{\"type\":\"keyword\"},\"status\":{\"type\":\"keyword\"},\"surveyId\":{\"type\":\"keyword\"},\"surveyName\":{\"type\":\"text\"},\"surveyType\":{\"type\":\"text\"},\"surveyee\":{\"type\":\"text\"},\"surveyor\":{\"type\":\"text\"},\"taskType\":{\"type\":\"text\"}}}
+survey.elastic.evaluated.index.name=evaluated_survey_
+survey.elastic.evaluated.index.mapping={\"properties\":{\"id\":{\"type\":\"keyword\"},\"status\":{\"type\":\"keyword\"},\"surveyId\":{\"type\":\"keyword\"},\"surveyName\":{\"type\":\"text\"},\"surveyType\":{\"type\":\"text\"},\"surveyee\":{\"type\":\"text\"},\"surveyeeType\":{\"type\":\"keyword\"},\"surveyor\":{\"type\":\"text\"},\"surveyorType\":{\"type\":\"keyword\"},\"taskType\":{\"type\":\"text\"}}}
+################# Survey ES Index configurations Ends #################
+
+
+################# Survey Internal Report configurations Starts #################
+survey.report.query={"elasticIndex":{"indexName":"evaluated_survey_*","isDataWeeklyIndexed":false},"elasticQuery":{"query":{"terms":{"status":["COMPLETED"]}},"sort":[{"submittedOn":{"order":"desc"}}],"_source":{"includes":["id","surveyType","tripId","submittedOn","surveyee","surveyor","surveyScore","maxScore","surveyName"]}}}
+survey.report.maxSize=10000
+################# Survey Internal Report configurations Starts #################
+
+
+################# Kafka Streams configurations Starts #################
+spring.kafka.producer.bootstrap-servers=localhost:9092
+spring.kafka.producer.replicaCount=1
+tms-out-stream.task-out.topic.name=trip-management-dev
+tms-out-stream.partitionCount=12
+survey.in-stream.kafka.topic_name=end-trip-survey-data-dev
+survey.in-stream.kafka.group_id=consumer-1
+
+sfc-link.kafka.security.protocol.enable=false
+sfc-link.kafka.security.protocol=SASL_SSL
+sfc-link.kafka.sasl.mechanism=SCRAM-SHA-512
+sfc-link.kafka.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username=\"sfcpockafka\" password=\"SDS1@sfcpockafka\";
+################# Kafka Streams configurations Starts #################
+
+
+################# Template Management Configurations Starts #################
+template.management.uri=http://localhost:8378
+template.management.api.create.template=/template/v1/template/create
+template.management.api.getById.template=/template/v1/template/{templateId}
+template.management.api.deleteById.template=/template/v1/template/{templateId}
+template.management.api.getByComponent.template=/template/v1/template/component/{componentName}
+################# Template Management Configurations Ends #################
+
+
+####### group management system config##############
+group.management.uri=http://localhost:8084/groupmanagementsystem
+group.management.api.get.groups.by.admin=/v1/group/admin/{userId}/groups
+
+############ Spring Doc (OpenAPI 3) configurations #############
+springdoc.swagger-ui.disable-swagger-default-url=false
+
+############ Survey list fetching sort direction #############
+survey.service.sort.direction=asc,desc
+
+################# Data Feed Configurations Starts #################
+dataFeed.version=1
+dataFeed.componentName=survey-management-system
+################# Data Feed Configurations Ends #################
+
+################# Thread Pool Configurations Starts #################
+threadpoolmanager.pools.dataFeed.targetId=com.seamless.common.data.dump.dataFeed
+threadpoolmanager.pools.dataFeed.corePoolSize=25
+threadpoolmanager.pools.dataFeed.maxPoolSize=40
+threadpoolmanager.pools.dataFeed.keepAliveTime=60000
+threadpoolmanager.pools.dataFeed.keepAliveTimeUnit=MILLISECONDS
+################# Thread Pool Configurations Ends #################
+
+##################### Message Resource Properties ########################
+locale.message.path=/opt/seamless/conf/survey-management-system
+locale.message.prefix=messages
+locale.message.defaultLocale=en-US
+locale.message.supportedLocale=en-US,fr,ar
+
+
+################# FTL Configurations Starts #################
+dataFeed.freemarker.file.path=/opt/seamless/conf/survey-management-system/templates/tdr
+template.CREATE_SURVEY=surveyTransaction.ftl
+template.EVALUATE_SURVEY=surveyEvaluation.ftl
+property.file.path=/opt/seamless/conf/survey-management-system/survey-management-system.properties
+################# FTL Configurations Ends #################
+​
+#--------------------DEALER-MANAGEMENT-PROPERTIES-------------------------
+dealer.management.uri=http://localhost:8033/dms
+dealer.management.api.get.reseller.details=/auth/getResellerInfo
+dealer.management.proxy.api.reseller.type.data=/v1/resellers/types/{typeId}
+dealer.management.proxy.api.reseller.by.attribute=/auth/searchResellersByAttribute
+### Reseller type id of TDR, ASM and RSM to fetch answers for autopick questions
+reseller.type.id.TDR=TDR
+reseller.type.id.ASM=ASM
+reseller.type.id.RSM=RSM
+
+
+#--------------------Allowed reseller-attributes for survey----------------#
+survey.allowed.reseller.attribute.ids=channelType
+#-------Reseller template keys---------#
+template.value.sections=sections
+template.value.widgets=widgets
+template.value.fieldType=fieldType
+template.value.options=options
+template.value.widget.id=id
+template.value.options.name=name
+template.value.options.value=value
+
+
+#--------Question Data json keys--------#
+question.scorable=scorable
+question.autopick.fieldNature=autopick
+
+
+#--------------------Spring profiles---------------------------------------#
+#comment the below line if you want job to be stopped
+spring.profiles.active=auto-evaluate,start-job,close-job,park-job
+
+
+#----------------Automatic evaluation Job-----------------------------#
+survey-management.survey.evaluation.job.cron=* */2 * * * *
+
+
+#----------------Survey Start Job-----------------------------#
+survey-management.survey.start.job.cron=*/60 * * * * *
+
+
+#----------------Survey Close Job-----------------------------#
+survey-management.survey.close.job.cron=*/60 * * * * *
+survey-management.survey.close.job.page.size=5000
+
+
+#----------------Survey Park Job-----------------------------#
+survey-management.survey.park.job.cron=*/60 * * * * *
+survey-management.survey.park.job.page.size=5000
+
+
+#------------------Autopick questions configuration------------------------#
+autopick.outletName.dms.key=outletName
+autopick.outletCode.dms.key=outletCode
+autopick.buildingName.dms.key=buildingName
+autopick.channelType.dms.key=channelType
+autopick.region.dms.key=region
+autopick.salesArea.dms.key=salesArea
+autopick.cluster.dms.key=cluster
+autopick.nearbyLandmark.dms.key=nearbyLandmark
+autopick.latitude.dms.key=latitude
+autopick.longitude.dms.key=longitude
+autopick.outletClassification.dms.key=outletClassification
+autopick.redFlag.dms.key=redFlag
+autopick.DOSAFlag.dms.key=DOSAFlag
+
+#------------------Reseller attributes--------------------------------------#
+reseller.attribute.by.grouping.component.name=KYC
+reseller.attribute.by.grouping.reseller.type.ids=pos
+#------------------Applicable-Types-All-------------------------------------#
+applicable.type.all.value=ALL
+#------------------Submission-Allowed-States--------------------------------#
+survey.submit.survey.states.allowed=ACTIVE,READY_TO_PARK,READY_TO_CLOSE
+#------------------Notification---------------------------------------------#
+notification.management.proxy.uri=http://localhost:8277
+notification.management.proxy.name=notification-service
+notification.management.proxy.failed.resultcode=9999
+notification.management.default.sender.mail=donotreply.sfo@gmail.com
+notification.management.feedback.templates=FeedbackRequest
+
+############# Thymeleaf configuration ####################
+spring.thymeleaf.check-template-location=true
+spring.thymeleaf.prefix=file:/opt/seamless/conf/survey-management-system/templates/notification/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML
+spring.thymeleaf.encoding=UTF-8
+spring.thymeleaf.content-type=text/html
+spring.thymeleaf.cache=false
+
+################# Kafka Streams configurations #################
+spring.cloud.stream.kafka.binder.brokers=localhost:9092
+spring.cloud.stream.kafka.binder.autoAddPartitions=true
+
+############# Feedback Survey Configuration Starts #########################
+feedback.task.enabled=pos_feedback
+#feedback.task.enabled=pos_feedback,warehouse_feedback,collector_feedback
+feedback.filter.generic.enabled=false
+distinct.map.survey.type.feedback.type={delivery_type:'RED',survey_type:'KYC',collection_type:'Azure',return_order_type:'Green'}
+survey.feedback.delivery.order.set=PO, PUSH_ORDER, PISO, SO, SO_ST, ADVERTISEMENT
+survey.feedback.survey.set=SURVEY_COLLECTION
+survey.feedback.collection.set=COLLECTION
+survey.feedback.return.order.set=RO
+survey.feedback.warehouse.task.message=warehouse_task
+survey.feedback.collector.task.message=collector_task
+survey.feedback.non.generic.task.type.prefix=FEEDBACK_
+############# Feedback Survey Configuration Ends #########################
+
+#------------------Submission-Allowed-for-same-surveyor-surveyee--------------------------------#
+allow.same.surveyor.surveyee=true
+
+################## Survey Reports Configuration Starts ##########################
+#Available Reports Source:red_survey,feedback_survey
+survey.report.sources.enabled=red_survey,feedback_survey
+#below report type mapping is a Map of String and list where key is report source which is enabled and value is list of survey type
+survey.report.type.mapping={"red_survey" : ["RED","UI-Red","New-Survey-type-test"],"feedback_survey" : ["feedback","FEEDBACK","KYC"]}
+survey.report.index.mapping={"red_survey" : "evaluated_red_survey_","feedback_survey" : "evaluated_feedback_survey_"}
+
+resellerPath.delimiter=/
+resellerPath.tdr.index.1.type=OPERATOR
+resellerPath.tdr.index.1.designation=OPERATOR
+resellerPath.tdr.index.2.type=DIRECTOR
+resellerPath.tdr.index.2.designation=DIRECTOR
+resellerPath.tdr.index.3.type=HOD
+resellerPath.tdr.index.3.designation=REGIONAL HEAD OF DEPARTMENT
+resellerPath.tdr.index.4.type=RSM
+resellerPath.tdr.index.4.designation=REGIONAL SALES MANAGER
+resellerPath.tdr.index.5.type=ASM
+resellerPath.tdr.index.5.designation=AREA SALES MANAGER
+resellerPath.tdr.index.6.type=TDR
+resellerPath.tdr.index.6.designation=TRADE DEVELOPMENT REPRESENTATIVE
+
+resellerPath.pos.index.1.type=OPERATOR
+resellerPath.pos.index.1.designation=OPERATOR
+resellerPath.pos.index.2.type=DEALER_HEADQUARTER
+resellerPath.pos.index.2.designation=DEALER HQ
+resellerPath.pos.index.3.type=DEALER_BRANCH
+resellerPath.pos.index.3.designation=DEALER BRANCH
+################## Survey Reports Configuration Ends ##########################
+
+####### trip management system config##############
+trip.management.uri=http://localhost:12001/tms
+trip.management.api.put.survey.task=/v1/trip/update-survey-task
+
+####### ES DATE FORMAT #############################
+survey.elastic.date.format=yyyy-MM-dd'T'HH:mm:ss'Z'
